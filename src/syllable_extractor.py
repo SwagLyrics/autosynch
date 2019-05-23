@@ -1,8 +1,7 @@
 import os
 import parselmouth as pm
 
-parentdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-resourcesdir = os.path.join(parentdir, 'resources')
+from config import parentdir, resourcesdir
 
 class SyllableExtractor(object):
     def __init__(self, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
