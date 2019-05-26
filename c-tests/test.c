@@ -5,7 +5,10 @@
 #include <sndfile.h>
 #include <portaudio.h>
 
-#define FRAMES_PER_BUFFER (1024)
+#define M_PI (3.14159265358979323846)
+#define FRAMES_PER_BUFFER (4096)
+
+static int cutoff = 10003000;
 
 typedef struct {
     SNDFILE *file;
@@ -14,42 +17,28 @@ typedef struct {
 
 static void die(const char *s) { perror(s); exit(1); }
 
-//Need to fix: p_input & segfault
-sf_count_t lpf(void *output, unsigned long framecount,
-        callback_data_s *p_data, int cutoff) {
-    
-    sf_count_t nread;
-    float *p_input = malloc(sizeof(float) * framecount * p_data->info.channels); 
-    float *p_output = (float *)output;
-
-    double tau = 1.0 / cutoff;
-    double alpha = framecount / tau;
-
-    nread = sf_read_float(p_data->file, p_input, framecount * p_data->info.channels);
-     
-    float tmp = p_input[0];
-    for (int i = 0; i < sizeof(float) * framecount * p_data->info.channels; i++) {
-        tmp += alpha * (p_input[i]-tmp);
-        p_output[i] = tmp;
-    }
-
-    free(p_input);
-    return nread/2;
-}
-
 int callback(const void *input, void *output, unsigned long framecount, 
         const PaStreamCallbackTimeInfo *timeinfo, PaStreamCallbackFlags statusflags,
         void *userdata) {
-    
-    sf_count_t nread;
+
+    sf_count_t count;
     float *p_output = (float *)output;
     callback_data_s *p_data = (callback_data_s *)userdata;
 
-    memset(p_output, 0, sizeof(float) * framecount * p_data->info.channels);
-    nread = lpf(output, framecount, p_data, 500);
-    //nread = sf_read_float(p_data->file, p_output, framecount * p_data->info.channels);
+    float p_input[sizeof(float) * framecount * p_data->info.channels];
+    count = sf_readf_float(p_data->file, p_input, framecount * p_data->info.channels); 
 
-    if (nread < framecount)
+    memset(p_output, 0, sizeof(float) * framecount * p_data->info.channels);
+
+    float RC = 1.0 / (cutoff*2*M_PI);
+    float dt = 1.0 / p_data->info.samplerate;
+    float alpha = dt / (RC+dt);
+
+    p_output[0] = p_input[0];
+    for (int i = 1; i < framecount; i++)
+        p_output[i] = p_output[i-1] + alpha * (p_input[i]-p_output[i-1]);
+
+    if (count < framecount)
         return paComplete;
     return paContinue;
 }
