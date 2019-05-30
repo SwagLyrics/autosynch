@@ -7,13 +7,15 @@ CFLAGS = -g -Wall $(INCLUDES)
 LDFLAGS = -g -L/usr/local/lib -L/usr/local/Cellar
 LDLIBS = -lsndfile -lportaudio
 
-test: test.o
+isolate-center: isolate-center.o mix-to-mono.o
 
-test.o:
+isolate-center.o: mix-to-mono.h
+
+mix-to-mono.o: mix-to-mono.h
 
 .PHONY: clean
 clean:
-	rm -f *~ a.out core *.o test
+	rm -f *~ a.out core *.o isolate-center 
 
 .PHONY: all
 all: clean test
