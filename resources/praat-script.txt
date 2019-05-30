@@ -177,15 +177,6 @@ if showtext > 0
   endfor
 endif
 
-# clean up before next sound file is opened
-select 'intid'
-plus 'matid'
-plus 'sndintid'
-plus 'ppid'
-plus 'pitchid'
-plus 'silencetierid'
-plus 'silencetableid'
-
 Remove
 if showtext < 1
    select 'soundid'
