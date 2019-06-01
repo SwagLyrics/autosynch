@@ -26,9 +26,6 @@ minpause = {}
 showtext = {}
 filepath$ = "{}"
 
-# print a single header line with column names and units
-printline soundname, nsyll, npause, dur (s), phonationtime (s), speechrate (nsyll/dur), articulation rate (nsyll/phonationtime), ASD (speakingtime/nsyll)
-
 # read files
 Read from file... 'filepath$'
 
@@ -184,10 +181,4 @@ if showtext < 1
    Remove
 endif
 
-# summarize results in Info window
-speakingrate = 'voicedcount'/'originaldur'
-articulationrate = 'voicedcount'/'speakingtot'
-npause = 'npauses'-1
-asd = 'speakingtot'/'voicedcount'
-
-printline 'soundname$', 'voicedcount', 'npause', 'originaldur:2', 'speakingtot:2', 'speakingrate:2', 'articulationrate:2', 'asd:3'
+printline 'soundname$' 'voicedcount' 'npause'

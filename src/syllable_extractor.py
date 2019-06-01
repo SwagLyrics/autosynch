@@ -21,4 +21,5 @@ class SyllableExtractor(object):
 
         script = script.format(self.silencedb, self.mindip, self.minpause,
                                self.showtext, fpath)
-        pm.praat.run(script)
+
+        return pm.praat.run(script, capture_output=True)[1].strip().split()
