@@ -17,10 +17,10 @@ class VocalIsolator(object):
 
 
 
-mix = '/Users/Chris/autosynch/resources/MSD100/Mixtures/Dev'
-src = '/Users/Chris/autosynch/resources/MSD100/Sources/Dev'
-
-f1 = join(join(mix, 'BKS - Bulldozer'), 'mixture.wav')
-f2 = join(join(src, 'BKS - Bulldozer'), 'vocals.wav')
-
-v = VocalIsolator(f1)
+# mix = '/Users/Chris/autosynch/resources/MSD100/Mixtures/Dev'
+# src = '/Users/Chris/autosynch/resources/MSD100/Sources/Dev'
+#
+# f1 = join(join(mix, 'BKS - Bulldozer'), 'mixture.wav')
+# f2 = join(join(src, 'BKS - Bulldozer'), 'vocals.wav')
+#
+# v = VocalIsolator(f1)

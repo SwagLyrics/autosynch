@@ -1,24 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-<<<<<<< HEAD
 #include <time.h>
-=======
->>>>>>> 17c58b609462c51af18dc5cf9e9234b986844256
 
 #include <sndfile.h>
 #include <portaudio.h>
 
 #define M_PI (3.14159265358979323846)
-<<<<<<< HEAD
 #define FRAMES_PER_BUFFER (1024)
 
 static int cutoff = 300;
-=======
-#define FRAMES_PER_BUFFER (4096)
-
-static int cutoff = 10003000;
->>>>>>> 17c58b609462c51af18dc5cf9e9234b986844256
 
 typedef struct {
     SNDFILE *file;
@@ -27,11 +18,7 @@ typedef struct {
 
 static void die(const char *s) { perror(s); exit(1); }
 
-<<<<<<< HEAD
-static int lpf(const void *input, void *output, unsigned long framecount, 
-=======
-int callback(const void *input, void *output, unsigned long framecount, 
->>>>>>> 17c58b609462c51af18dc5cf9e9234b986844256
+static int lpf(const void *input, void *output, unsigned long framecount,
         const PaStreamCallbackTimeInfo *timeinfo, PaStreamCallbackFlags statusflags,
         void *userdata) {
 
@@ -40,7 +27,7 @@ int callback(const void *input, void *output, unsigned long framecount,
     callback_data_s *p_data = (callback_data_s *)userdata;
 
     float p_input[sizeof(float) * framecount * p_data->info.channels];
-    count = sf_readf_float(p_data->file, p_input, framecount * p_data->info.channels); 
+    count = sf_readf_float(p_data->file, p_input, framecount * p_data->info.channels);
 
     memset(p_output, 0, sizeof(float) * framecount * p_data->info.channels);
 
@@ -57,8 +44,7 @@ int callback(const void *input, void *output, unsigned long framecount,
     return paContinue;
 }
 
-<<<<<<< HEAD
-static int callback(const void *input, void *output, unsigned long framecount, 
+static int callback(const void *input, void *output, unsigned long framecount,
         const PaStreamCallbackTimeInfo *timeinfo, PaStreamCallbackFlags statusflags,
         void *userdata) {
 
@@ -67,16 +53,14 @@ static int callback(const void *input, void *output, unsigned long framecount,
     callback_data_s *p_data = (callback_data_s *)userdata;
 
     float p_input[sizeof(float) * framecount * p_data->info.channels];
-    count = sf_readf_float(p_data->file, p_input, framecount * p_data->info.channels); 
+    count = sf_readf_float(p_data->file, p_input, framecount * p_data->info.channels);
 
     memset(p_output, 0, sizeof(float) * framecount * p_data->info.channels);
 
 }
- 
-=======
->>>>>>> 17c58b609462c51af18dc5cf9e9234b986844256
+
 int main(int argc, char **argv) {
-    
+
     if (argc != 2) {
         printf("usage: %s <input_file.wav>\n", argv[0]);
         exit(1);
@@ -91,20 +75,13 @@ int main(int argc, char **argv) {
     if ((data.file = sf_open(fname, SFM_READ, &data.info)) == NULL)
         die("sf_open() failed");
 
-<<<<<<< HEAD
     printf("%d\n", data.info.channels);
 
-=======
->>>>>>> 17c58b609462c51af18dc5cf9e9234b986844256
     if (Pa_Initialize() != paNoError)
         die("Pa_Initialize() failed");
 
     if (Pa_OpenDefaultStream(&stream, 0, data.info.channels, paFloat32,
-<<<<<<< HEAD
                 data.info.samplerate, paFramesPerBufferUnspecified, lpf, &data) != paNoError)
-=======
-                data.info.samplerate, FRAMES_PER_BUFFER, callback, &data) != paNoError)
->>>>>>> 17c58b609462c51af18dc5cf9e9234b986844256
         die("Pa_OpenDefaultStream() failed");
 
     if (Pa_StartStream(stream) != paNoError)
