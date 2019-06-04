@@ -181,4 +181,4 @@ if showtext < 1
    Remove
 endif
 
-printline 'soundname$' 'voicedcount' 'npause'
+printline 'voicedcount'
