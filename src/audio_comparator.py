@@ -10,7 +10,7 @@ def ft2d(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def repet(fpath):
+def rpet(fpath):
     """
     REPET original implementation.
 
@@ -27,7 +27,7 @@ def repet(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def repet_sim(fpath):
+def rsim(fpath):
     """
     REPET-SIM implementation.
 
@@ -62,7 +62,7 @@ def hpss(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def melodia(fpath):
+def mdia(fpath):
     """
     Melodia implementation.
 
@@ -113,7 +113,7 @@ def duet(fpath, num_sources=2, dominance=False):
 
     return [(source.sample_rate, source.audio_data) for source in sources]
 
-def projet(fpath, num_sources=2):
+def pjet(fpath, num_sources=2):
     """
     PROJET implementation.
 
@@ -136,7 +136,7 @@ def projet(fpath, num_sources=2):
 
     return [(source.sample_rate, source.audio_data) for source in sources]
 
-def nmf_mfcc(fpath, num_sources=2):
+def nnmf(fpath, num_sources=2):
     """
     Non-Negative Matrix Factorization using K-Means Clustering on Mel-frequency
     Cepstral Coefficients (NMF MFCC) implementation.
