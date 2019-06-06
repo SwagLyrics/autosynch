@@ -136,26 +136,6 @@ def pjet(fpath, num_sources=2):
 
     return [(source.sample_rate, source.audio_data) for source in sources]
 
-def nnmf(fpath, num_sources=2):
-    """
-    Non-Negative Matrix Factorization using K-Means Clustering on Mel-frequency
-    Cepstral Coefficients (NMF MFCC) implementation.
-
-    M. Spiertz and V. Gnann. "Source-filter based clustering for monaural blind
-    source separation," Proceedings of the 12th International Conference on
-    Digital Audio Effects, 2009.
-
-    :param num_sources: Number of foreground sources to extract.
-    :return sources: List of audio signals with length num_sources
-    """
-
-    signal = nussl.AudioSignal(fpath)
-    nmf_mfcc = nussl.NMF_MFCC(signal, num_sources)
-    nmf_mfcc.run()
-    sources = nmf_mfcc.make_audio_signals()
-
-    return [(source.sample_rate, source.audio_data) for source in sources]
-
 def rpca(fpath):
     """
     Robust Principal Component Analysis (RPCA) implementation.

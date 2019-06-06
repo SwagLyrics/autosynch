@@ -14,11 +14,10 @@ algorithms = [ ac.duet,
                ac.ft2d,
                ac.hpss,
                ac.mdia,
-               ac.nnmf,
-               ac.pjet,
                ac.rpet,
                ac.rsim,
-               ac.rpca  ]
+               ac.rpca
+             ]
 
 def eval():
     eval = []
@@ -40,6 +39,7 @@ def eval():
         track = song[split_i+2:]
 
         print('{} - {}'.format(artist, track))
+        print('---------------------------------------------------')
 
         # Do background strip and save as wav
         for algorithm in algorithms:
