@@ -1,4 +1,6 @@
 import nussl
+from mss_pytorch import mss_pytorch
+from mss_pytorch.helpers import nnet_helpers
 
 def ft2d(fpath):
     """Basic 2D Fourier transform vocal isolation method from nussl"""
@@ -10,7 +12,7 @@ def ft2d(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def rpet(fpath):
+def repet(fpath):
     """
     REPET original implementation.
 
@@ -27,7 +29,7 @@ def rpet(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def rsim(fpath):
+def repetsim(fpath):
     """
     REPET-SIM implementation.
 
@@ -62,7 +64,7 @@ def hpss(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def mdia(fpath):
+def melodia(fpath):
     """
     Melodia implementation.
 
@@ -113,7 +115,7 @@ def duet(fpath, num_sources=2, dominance=False):
 
     return [(source.sample_rate, source.audio_data) for source in sources]
 
-def pjet(fpath, num_sources=2):
+def projet(fpath, num_sources=2):
     """
     PROJET implementation.
 
@@ -151,3 +153,23 @@ def rpca(fpath):
     _, foreground = rpca.make_audio_signals()
 
     return [(foreground.sample_rate, foreground.audio_data)]
+
+def msstorch(fpath, training=False, apply_sparsity=True):
+    sfiltnet = mss_pytorch.main(training, apply_sparsity)
+
+    signal = nussl.AudioSignal(fpath)
+    x      = signal.audio_data
+    fs     = signal.sample_rate
+    seqlen = int(signal.signal_duration)
+    # olap   = signal.stft_params.window_overlap
+    # wsz    = signal.stft_params.window_length
+    # N      = signal.stft_params.n_fft_bins
+    # hop    = signal.stft_params.hop_length
+    # B      = 16
+    #
+    # print(wsz)
+    # print(hop)
+
+    sr, f = nnet_helpers.test_nnet(sfiltnet, x, fs, seqlen, 10*2, 2049, 4096, 384, 16)
+
+    return [(sr, f)]

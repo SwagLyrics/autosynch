@@ -3,15 +3,16 @@ __author__ = 'S.I. Mimilakis'
 __copyright__ = 'MacSeNet'
 
 # imports
-from helpers.io_methods import AudioIO as Io
-from helpers.masking_methods import FrequencyMasking as Fm
+import os
+import numpy as np
+import pickle as pickle
 from mir_eval import separation as bss_eval
 from numpy.lib import stride_tricks
-from helpers import iterative_inference as it_infer
-from helpers import tf_methods as tf
-import pickle as pickle
-import numpy as np
-import os
+from .io_methods import AudioIO as Io
+from .masking_methods import FrequencyMasking as Fm
+from . import iterative_inference as it_infer
+from . import tf_methods as tf
+
 
 # definitions
 parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -60,15 +61,15 @@ def prepare_overlap_sequences(ms, vs, bk, l_size, o_lap, bsize):
         bk = np.pad(bk, ((0, trim_frame), (0, 0)), 'constant', constant_values=(0, 0))
 
     # Reshaping with overlap
-    ms = stride_tricks.as_strided(ms, shape=(int(ms.shape[0] / (l_size - o_lap)), l_size, ms.shape[1]),
+    ms = stride_tricks.as_strided(ms, shape=(ms.shape[0] // (l_size - o_lap), l_size, ms.shape[1]),
                                   strides=(ms.strides[0] * (l_size - o_lap), ms.strides[0], ms.strides[1]))
     ms = ms[:-1, :, :]
 
-    vs = stride_tricks.as_strided(vs, shape=(int(vs.shape[0] / (l_size - o_lap)), l_size, vs.shape[1]),
+    vs = stride_tricks.as_strided(vs, shape=(vs.shape[0] // (l_size - o_lap), l_size, vs.shape[1]),
                                   strides=(vs.strides[0] * (l_size - o_lap), vs.strides[0], vs.strides[1]))
     vs = vs[:-1, :, :]
 
-    bk = stride_tricks.as_strided(bk, shape=(int(bk.shape[0] / (l_size - o_lap)), l_size, bk.shape[1]),
+    bk = stride_tricks.as_strided(bk, shape=(bk.shape[0] // (l_size - o_lap), l_size, bk.shape[1]),
                                   strides=(bk.strides[0] * (l_size - o_lap), bk.strides[0], bk.strides[1]))
     bk = bk[:-1, :, :]
 
@@ -272,12 +273,14 @@ def test_eval(nnet, B, T, N, L, wsz, hop):
     return None
 
 
-def test_nnet(nnet, seqlen=100, olap=40, wsz=2049, N=4096, hop=384, B=16):
+def test_nnet(nnet, x, fs, seqlen, olap, wsz, N, hop, B):
     """
         Method to test the model on some data. Writes the outcomes in ".wav" format and.
         stores them under the defined results path.
         Args:
             nnet             : (List)      A list containing the Pytorch modules of the skip-filtering model.
+            x                : (np.array)  Audio signal data
+            fs               : (int)       Sample rate.
             seqlen           : (int)       Length of the time-sequence.
             olap             : (int)       Overlap between spectrogram time-sequences
                                            (to recover the missing information from the context information).
@@ -292,7 +295,6 @@ def test_nnet(nnet, seqlen=100, olap=40, wsz=2049, N=4096, hop=384, B=16):
     nnet[3].eval()
     L = int(olap/2)
     w = tf.hamming(wsz, True)
-    x, fs = Io.wavRead(os.path.join(parent, 'results/test_files/test.wav'), mono=True)
 
     mx, px = tf.TimeFrequencyDecomposition.STFT(x, w, N, hop)
     mx, px, _ = prepare_overlap_sequences(mx, px, mx, seqlen, olap, B)
@@ -328,9 +330,8 @@ def test_nnet(nnet, seqlen=100, olap=40, wsz=2049, N=4096, hop=384, B=16):
 
     x = x[int(olap/2) * hop:]
 
-    Io.wavWrite(y_recb, fs, 16, os.path.join(parent, 'results/test_files/test_sv.wav'))
-    Io.wavWrite(x[:len(y_recb)], fs, 16, os.path.join(parent, 'results/test_files/test_mix.wav'))
+    # Io.wavWrite(y_recb, fs, 16, outpath)
 
-    return None
+    return fs, y_recb
 
 # EOF

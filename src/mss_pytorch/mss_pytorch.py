@@ -8,11 +8,11 @@ import torch
 import torch.optim as optim
 import numpy as np
 from tqdm import tqdm
-from helpers import visualize, nnet_helpers
 from torch.autograd import Variable
-from modules import cls_sparse_skip_filt as s_s_net
-from losses import loss_functions
-from helpers import iterative_inference as it_infer
+from .helpers import visualize, nnet_helpers
+from .helpers import iterative_inference as it_infer
+from .modules import cls_sparse_skip_filt as s_s_net
+from .losses import loss_functions
 
 # Setup
 parent = os.path.dirname(os.path.realpath(__file__))

@@ -2,8 +2,7 @@
 __author__ = 'J.F. Santos, K. Drossos'
 
 import torch
-from losses import loss_functions
-
+from ..losses import loss_functions
 
 def iterative_inference(module, x, criterion=None, tol=1e-9, max_iter=10):
     if criterion is None:

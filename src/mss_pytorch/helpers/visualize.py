@@ -3,8 +3,8 @@ __author__ = 'S.I. Mimilakis'
 __copyright__ = 'MacSeNet'
 
 # imports
-from visdom import Visdom
 import numpy as np
+from visdom import Visdom
 
 viz = Visdom()
 
