@@ -1,4 +1,6 @@
+import scipy.io.wavfile
 import nussl
+import commonfate
 from mss_pytorch import mss_pytorch
 from mss_pytorch.helpers import nnet_helpers
 
@@ -154,22 +156,21 @@ def rpca(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def msstorch(fpath, training=False, apply_sparsity=True):
+def msstorch(fpath, training=False, apply_sparsity=True, olap=20, wsz=2049,
+             N=4096, hop=384, B=16, mono=True):
+
     sfiltnet = mss_pytorch.main(training, apply_sparsity)
+    sample_rate, signal = nnet_helpers.test_nnet(sfiltnet, fpath, olap, wsz, N, hop, B, mono)
 
-    signal = nussl.AudioSignal(fpath)
-    x      = signal.audio_data
-    fs     = signal.sample_rate
-    seqlen = int(signal.signal_duration)
-    # olap   = signal.stft_params.window_overlap
-    # wsz    = signal.stft_params.window_length
-    # N      = signal.stft_params.n_fft_bins
-    # hop    = signal.stft_params.hop_length
-    # B      = 16
-    #
-    # print(wsz)
-    # print(hop)
+    return [(sample_rate, signal)]
 
-    sr, f = nnet_helpers.test_nnet(sfiltnet, x, fs, seqlen, 10*2, 2049, 4096, 384, 16)
+def cfm(fpath, nb_components=10):
+    signal, sample_rate = scipy.io.wavfile.read(fpath)
+    components = commonfate.decompose.process(signal,
+                    nb_components=nb_components, nb_iter=100)
 
-    return [(sr, f)]
+    output = []
+    for i in range(nb_components):
+        output.append((sample_rate, components[i, ...]))
+
+    return output

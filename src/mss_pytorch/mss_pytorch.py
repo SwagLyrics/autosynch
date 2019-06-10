@@ -186,7 +186,9 @@ if __name__ == '__main__':
     #nnet_helpers.test_eval(sfiltnet, 16, 60, 4096, 10, 2049, 384)
     #print('-------------       Done       -------------')
     print('-------------     DNN-Test     -------------')
-    nnet_helpers.test_nnet(sfiltnet, 60, 10*2, 2049, 4096, 384, 16)
+    import soundfile
+    x, fs = soundfile.read('/Users/Chris/autosynch/src/mss_pytorch/results/test_files/test.wav')
+    nnet_helpers.test_nnet(sfiltnet, x, fs, 60, 10*2, 2049, 4096, 384, 16)
     print('-------------       Done       -------------')
 
 # EOF

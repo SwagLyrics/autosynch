@@ -273,21 +273,20 @@ def test_eval(nnet, B, T, N, L, wsz, hop):
     return None
 
 
-def test_nnet(nnet, x, fs, seqlen, olap, wsz, N, hop, B):
+def test_nnet(nnet, input, olap, wsz, N, hop, B, mono):
     """
         Method to test the model on some data. Writes the outcomes in ".wav" format and.
         stores them under the defined results path.
         Args:
             nnet             : (List)      A list containing the Pytorch modules of the skip-filtering model.
-            x                : (np.array)  Audio signal data
-            fs               : (int)       Sample rate.
-            seqlen           : (int)       Length of the time-sequence.
+            input            : (file-like) File path to wav file.
             olap             : (int)       Overlap between spectrogram time-sequences
                                            (to recover the missing information from the context information).
             wsz              : (int)       Window size in samples.
             N                : (int)       The FFT size.
             hop              : (int)       Hop size in samples.
             B                : (int)       Batch size.
+            mono             : (bool)      True to return audio mixed to mono.
     """
     nnet[0].eval()
     nnet[1].eval()
@@ -295,6 +294,9 @@ def test_nnet(nnet, x, fs, seqlen, olap, wsz, N, hop, B):
     nnet[3].eval()
     L = int(olap/2)
     w = tf.hamming(wsz, True)
+    x, fs = Io.wavRead(input, mono=mono)
+
+    seqlen = min(x.shape[0] / fs, 60)
 
     mx, px = tf.TimeFrequencyDecomposition.STFT(x, w, N, hop)
     mx, px, _ = prepare_overlap_sequences(mx, px, mx, seqlen, olap, B)
@@ -329,8 +331,6 @@ def test_nnet(nnet, x, fs, seqlen, olap, wsz, N, hop, B):
         _, px = tf.TimeFrequencyDecomposition.STFT(y_recb, tf.hamming(wsz, True), N, hop)
 
     x = x[int(olap/2) * hop:]
-
-    # Io.wavWrite(y_recb, fs, 16, outpath)
 
     return fs, y_recb
 
