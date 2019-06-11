@@ -117,29 +117,6 @@ def duet(fpath, num_sources=2, dominance=False):
 
     return [(source.sample_rate, source.audio_data) for source in sources]
 
-def projet(fpath, num_sources=2):
-    """
-    PROJET implementation.
-
-    D. Fitzgerald, A. Liutkus, and R. Badeau. "PROJET - Spatial Audio Separation
-    Using Projections," 41st International Conference on Acoustics, Speech and
-    Signal Processing, Shanghai, China, 2016.
-
-    :param fpath: Audio signal must be stereophonic.
-    :param num_sources: Number of foreground sources to extract.
-    :return sources: List of audio signals with length num_sources
-    """
-
-    signal = nussl.AudioSignal(fpath)
-    if not signal.is_stereo:
-        return None
-
-    projet = nussl.Projet(signal, num_sources)
-    projet.run()
-    sources = projet.make_audio_signals()
-
-    return [(source.sample_rate, source.audio_data) for source in sources]
-
 def rpca(fpath):
     """
     Robust Principal Component Analysis (RPCA) implementation.
@@ -158,16 +135,32 @@ def rpca(fpath):
 
 def msstorch(fpath, training=False, apply_sparsity=True, olap=20, wsz=2049,
              N=4096, hop=384, B=16, mono=True):
+    """
+    MSS PyTorch implementation.
+
+    S.I. Mimilakis, K. Drossos, J.F. Santos, G. Schuller, T. Virtanen, and Y.
+    Bengio. "Monaural Singing Voice Separation with Skip-Filtering Connections
+    and Recurrent Inference of Time-Frequency Mask," arXiv:1711.01437, 2017.
+    """
 
     sfiltnet = mss_pytorch.main(training, apply_sparsity)
     sample_rate, signal = nnet_helpers.test_nnet(sfiltnet, fpath, olap, wsz, N, hop, B, mono)
 
     return [(sample_rate, signal)]
 
-def cfm(fpath, nb_components=10):
-    signal, sample_rate = scipy.io.wavfile.read(fpath)
+def cfm(fpath, nb_components=2):
+    """
+    Common Fate Model/Transform implementation.
+
+    F.-R. Stoter, A. Liutkus, R. Badeau, B. Edler, and P. Magron. "Common Fate
+    Model for Unison Source Separation," 41st International Conference on
+    Acoustics, Speech and Signal Processing, Shanghai, China, 2016.
+    TITLE = {{Common Fate Model for Unison source Separation}},
+    """
+    import soundfile
+    (signal, sample_rate) = soundfile.read(fpath, always_2d=True)
     components = commonfate.decompose.process(signal,
-                    nb_components=nb_components, nb_iter=100)
+                    nb_components=nb_components, nb_iter=5)
 
     output = []
     for i in range(nb_components):
