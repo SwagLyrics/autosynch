@@ -121,9 +121,10 @@ def rpca(fpath):
     """
     Robust Principal Component Analysis (RPCA) implementation.
 
-    P.-S. Huang, et al. "Singing-voice separation from monaural recordings using
-    robust principal component analysis," Acoustics, Speech and Signal
-    Processing, IEEE International Conference, 2012.
+    P.-S. Huang, S. D. Chen, P. Smaragdis, and M. Hasegawa-Johnson. "Singing-
+    voice separation from monaural recordings using robust principal component
+    analysis," Acoustics, Speech and Signal Processing, IEEE International
+    Conference, 2012.
     """
 
     signal = nussl.AudioSignal(fpath)
@@ -133,20 +134,32 @@ def rpca(fpath):
 
     return [(foreground.sample_rate, foreground.audio_data)]
 
-def msstorch(fpath, training=False, apply_sparsity=True, olap=20, wsz=2049,
+def msspytorch(fpath, training=False, apply_sparsity=True, olap=20, wsz=2049,
              N=4096, hop=384, B=16, mono=True):
     """
     MSS PyTorch implementation.
 
-    S.I. Mimilakis, K. Drossos, J.F. Santos, G. Schuller, T. Virtanen, and Y.
+    S. I. Mimilakis, K. Drossos, J.F. Santos, G. Schuller, T. Virtanen, and Y.
     Bengio. "Monaural Singing Voice Separation with Skip-Filtering Connections
-    and Recurrent Inference of Time-Frequency Mask," arXiv:1711.01437, 2017.
+    and Recurrent Inference of Time-Frequency Mask," arXiv:1711.01437 [cs.SD],
+    2017.
     """
 
     sfiltnet = mss_pytorch.main(training, apply_sparsity)
     sample_rate, signal = nnet_helpers.test_nnet(sfiltnet, fpath, olap, wsz, N, hop, B, mono)
 
     return [(sample_rate, signal)]
+
+def madtwinnet(fpath):
+    """
+    Masker-Denoiser (MaD) TwinNet implementation.
+
+    K. Drossos, S. I. Mimilakis, D. Serdyuk, G. Schuller, T. Virtanen, and Y.
+    Bengio. "MaD TwinNet: Masker-Denoiser Architecture with Twin Networks for
+    Monaural Sound Source Separation," arXiv:1802.00300 [cs.SD], 2018.
+    """
+
+
 
 def cfm(fpath, nb_components=2):
     """

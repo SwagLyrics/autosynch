@@ -75,5 +75,5 @@ def eval():
 from mss_pytorch import mss_pytorch
 from mss_pytorch.helpers import nnet_helpers
 sfiltnet = mss_pytorch.main(False, True)
-x, fs = soundfile.read('/Users/Chris/autosynch/src/mss_pytorch/results/test_files/test.wav')
-nnet_helpers.test_nnet(sfiltnet, x, fs, 60, 10*2, 2049, 4096, 384, 16)
+input_file = '/Users/Chris/autosynch/src/mss_pytorch/results/test_files/test.wav'
+nnet_helpers.test_nnet(sfiltnet, input_file, 60, 10*2, 2049, 4096, 384, 16)
