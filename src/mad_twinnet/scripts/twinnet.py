@@ -13,17 +13,17 @@ import time
 import numpy as np
 import torch
 
-from helpers.data_feeder import data_feeder_testing, data_process_results_testing
-from helpers.settings import debug, hyper_parameters, output_states_path, training_constants, \
-    usage_output_string_per_example, usage_output_string_total
-from modules import RNNEnc, RNNDec, FNNMasker, FNNDenoiser
+from ..helpers.data_feeder import data_feeder_testing, data_process_results_testing
+from ..helpers.settings import debug, hyper_parameters, output_states_path, \
+       training_constants, usage_output_string_per_example, usage_output_string_total
+from ..modules import RNNEnc, RNNDec, FNNMasker, FNNDenoiser
 
 __author__ = ['Konstantinos Drossos -- TUT', 'Stylianos Mimilakis -- Fraunhofer IDMT']
 __docformat__ = 'reStructuredText'
-__all__ = ['use_me_process']
+__all__ = ['twinnet_process']
 
 
-def use_me_process(sources_list, output_file_names):
+def twinnet_process(sources_list, output_file_names):
     """The usage process.
 
     :param sources_list: The file names to be used.
@@ -155,47 +155,5 @@ def _get_file_names_from_file(file_name):
     """
     with open(file_name) as f:
         return [line.strip() for line in f.readlines()]
-
-
-def main():
-    cmd_arg_parser = argparse.ArgumentParser(
-        usage='python scripts/use_me [-w the_file.wav]|[-l the_files.txt]',
-        description='Script to use the MaD TwinNet with your own files. Remember to set up properly'
-                    'the PYTHONPATH environmental variable'
-    )
-
-    cmd_arg_parser.add_argument(
-        '--input-wav', '-w', action='store', dest='input_wav', default='',
-        help='Specify one wav file to be processed.'
-    )
-
-    cmd_arg_parser.add_argument(
-        '--input-list', '-l', action='store', dest='input_list', default=[],
-        help='Specify one txt file with each line to be one path for a wav file.'
-    )
-
-    cmd_args = cmd_arg_parser.parse_args()
-    input_wav = cmd_args.input_wav
-    input_list = cmd_args.input_list
-
-    if (input_wav == '' and len(input_list) == 0) or (input_wav != '' and len(input_list) != 0):
-        print('-- Please specify **either** a wav file (with -w) **or** give'
-              'a txt file with file names in each line (with -l). ')
-        print('-- Exiting.')
-        exit(-1)
-
-    if len(input_list) == 0:
-        input_list = [input_wav]
-    else:
-        input_list = _get_file_names_from_file(input_list)
-
-    use_me_process(
-        sources_list=input_list,
-        output_file_names=_make_target_file_names(input_list)
-    )
-
-
-if __name__ == '__main__':
-    main()
 
 # EOF

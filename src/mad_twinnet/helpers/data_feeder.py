@@ -12,9 +12,9 @@ from mir_eval import separation as bss_eval
 from numpy.lib import stride_tricks
 from scipy import signal
 
-from helpers.audio_io import wav_read, wav_write
-from helpers.settings import dataset_paths, output_audio_paths, wav_quality
-from helpers.signal_transforms import stft, i_stft, ideal_ratio_masking
+from .audio_io import wav_read, wav_write
+from .settings import dataset_paths, output_audio_paths, wav_quality
+from .signal_transforms import stft, i_stft, ideal_ratio_masking
 
 __author__ = ['Konstantinos Drossos -- TUT', 'Stylianos Mimilakis -- Fraunhofer IDMT']
 __docformat__ = 'reStructuredText'

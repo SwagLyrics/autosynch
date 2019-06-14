@@ -132,7 +132,7 @@ def _gl_alg(window_size, hop, fft_size=4096):
     Acoustics, Speech and Signal Processing, vol. 32, no. 2, pp. 236-243,\
     Apr 1984.
 
-    :param window_size: Synthesis window size in samples. 
+    :param window_size: Synthesis window size in samples.
     :type window_size: int
     :param hop: Hop size in samples.
     :type hop: int

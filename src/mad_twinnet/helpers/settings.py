@@ -4,7 +4,6 @@
 """The settings of the modules and the process
 """
 
-# imports
 import os
 
 __author__ = 'Konstantinos Drossos'
