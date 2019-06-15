@@ -36,13 +36,9 @@ def get_vocal_syllables(source, output_dir=None, get_background=False):
     twinnet.twinnet_process(source, output_file_names=output_file_names, get_background=get_background)
 
     logging.info('Beginning syllable nuclei analysis...')
-    for file in output_dir:
-        f_name = os.path.basename(file)
-        syllables = snd.snd(file)
-        logging.info('%s: %d syllables', f_name, syllables)
+    for file in os.listdir(output_dir):
+        syllables = snd.snd(os.path.join(output_dir, file))
+        logging.info('%s: %s syllables', file, syllables)
 
 def eval_by_syllable():
     pass
-
-get_vocal_syllables('/Users/Chris/autosynch/resources/MedleyDB_sample/Audio/LizNelson_Rainfall/LizNelson_Rainfall_MIX.wav',
-                    '/Users/Chris/autosynch/resources/output')
