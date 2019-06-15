@@ -1,4 +1,4 @@
-Adapted for use by autosynch.
+# Adapted for use by autosynch.
 
 ###########################################################################
 #                                                                         #
