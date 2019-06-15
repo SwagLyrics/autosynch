@@ -137,7 +137,8 @@ def data_feeder_testing(window_size, fft_size, hop_size, seq_length, context_len
 
 def data_process_results_testing(index, voice_true, bg_true, voice_predicted,
                                  window_size, mix, mix_magnitude, mix_phase, hop,
-                                 context_length, output_file_name=None):
+                                 context_length, output_file_name=None,
+                                 get_background=False):
     """Calculates SDR and SIR and creates the resulting audio files.
 
     :param index: The index of the current source/track.
@@ -165,6 +166,8 @@ def data_process_results_testing(index, voice_true, bg_true, voice_predicted,
                              None, then the function just synthesizes the
                              voice and the background music, and saves them.
     :type output_file_name: list[str] | None
+    :param get_background: Whether or not to extract background music.
+    :type get_background: bool
     :return: The values of SDR and SIR for each of the frames in\
              the current track, for both voice and background music.
     :rtype: (list[numpy.core.multiarray.ndarray], list[numpy.core.multiarray.ndarray])
@@ -205,13 +208,15 @@ def data_process_results_testing(index, voice_true, bg_true, voice_predicted,
 
     else:
         voice_hat_path = output_file_name[0]
-        bg_hat_path = output_file_name[1]
+        if get_background:
+            bg_hat_path = output_file_name[1]
 
         sdr = None
         sir = None
 
     wav_write(voice_hat, file_name=voice_hat_path, **wav_quality)
-    wav_write(bg_hat, file_name=bg_hat_path, **wav_quality)
+    if get_background:
+        wav_write(bg_hat, file_name=bg_hat_path, **wav_quality)
 
     return sdr, sir
 

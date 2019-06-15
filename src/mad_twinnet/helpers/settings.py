@@ -29,8 +29,9 @@ debug = False
 _debug_suffix = '_debug' if debug else ''
 
 # Paths
-_dataset_parent_dir = 'dataset'
-_outputs_path = 'outputs'
+_root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+_dataset_parent_dir = os.path.join(_root_dir, 'dataset')
+_outputs_path = os.path.join(_root_dir, 'outputs')
 _states_path = os.path.join(_outputs_path, 'states')
 _metrics_path = os.path.join(_outputs_path, 'metrics')
 _audio_files_path = os.path.join(_outputs_path, 'audio_files')
@@ -89,8 +90,8 @@ testing_output_string_all = 'Median SDR:{sdr:6.2f} dB | ' \
                             'Median SIR:{sir:6.2f} dB | ' \
                             'Total time:{t:6.2f} sec(s)'
 
-usage_output_string_per_example = '-- File {f} processed. Time: {t:6.2f} sec(s)'
-usage_output_string_total = '-- All files processed. Total time: {t:6.2f} sec(s)'
+usage_output_string_per_example = 'File {f} processed. Time: {t:6.2f} sec'
+usage_output_string_total = 'All files processed. Total time: {t:6.2f} sec'
 
 # Process constants
 training_constants = {
