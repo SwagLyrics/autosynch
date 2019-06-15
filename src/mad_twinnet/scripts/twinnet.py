@@ -56,13 +56,12 @@ def _get_file_names_from_file(file_name):
 def twinnet_process(sources_list, output_file_names=None, get_background=False):
     """Applies MaD TwinNet to audio files.
 
-    All files listed in sources_list must be .wav with 44.1kHz sampling rates
-    with 16 bit sample width. If output_file_names is None, then file names are
-    automatically generated
-
-    :param sources_list: The file names to be used.
+    :param sources_list: Files to be processed.\
+           Each must be .wav with 44.1kHz sample rate, recommended bit width of
+           16 (8, 24, 32 acceptable).
     :type sources_list: list[str]
-    :param output_file_names: The output file names to be used.
+    :param output_file_names: The output file names to be used.\
+           If None, outputs names are automatically generated.
     :type output_file_names: list[list[str]] | None
     """
 
