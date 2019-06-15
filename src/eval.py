@@ -4,7 +4,8 @@ import sys
 import warnings
 import logging
 
-import config, snd
+import snd
+from config import resourcesdir
 from mad_twinnet.scripts import twinnet
 
 logging.basicConfig(level=logging.INFO,
@@ -114,3 +115,18 @@ def eval_by_syllable(source, vocals, output_dir=None, get_background=False):
         eval_output.append(eval_item)
 
     return eval_output
+
+if __name__ == '__main__':
+    source = [ os.path.join(resourcesdir, 'examples/LizNelson_Rainfall_MIX.wav'),
+               os.path.join(resourcesdir, 'examples/MarvinGaye_Grapevine_MIX.wav') ]
+    vocals = [ os.path.join(resourcesdir, 'examples/LizNelson_Rainfall_VOCALS.wav'),
+               os.path.join(resourcesdir, 'examples/MarvinGaye_Grapevine_VOCALS.wav') ]
+    output_dir = os.path.join(resourcesdir, 'outputs')
+
+    eval = eval_by_syllable(source, vocals, output_dir, False)
+    for item in eval:
+        print(os.path.basename(item['name']))
+        print('---------------------------------')
+        print('Syllables from MaD TwinNet : {}'.format(item['mad']))
+        print('Syllables from vocal source: {}'.format(item['src']))
+        print('Number of syllables error  : {}'.format(item['off']))
