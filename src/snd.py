@@ -1,11 +1,10 @@
 import os
+import logging
 import parselmouth as pm
 
 from config import resourcesdir
 
-supported = ['.wav', '.aiff', '.aifc', '.au', '.mp3']
-
-def run(fpath, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
+def snd(fpath, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
     """
     Runs PRAAT script to do syllable analysis on audio file.
 
@@ -14,9 +13,8 @@ def run(fpath, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
     :return: number of syllables
     """
 
-    fext = os.path.splitext(fpath)[-1]
-    if fext not in supported:
-        print('{} extension not supported'.format(fext))
+    if not os.path.exists(fpath):
+        logging.error('%s does not exist', fpath)
 
     with open(os.path.join(resourcesdir,'praat-script.txt'), 'r') as f:
         script = f.read()
