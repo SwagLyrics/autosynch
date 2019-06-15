@@ -125,6 +125,7 @@ if __name__ == '__main__':
 
     eval = eval_by_syllable(source, vocals, output_dir, False)
     for item in eval:
+        print()
         print(os.path.basename(item['name']))
         print('---------------------------------')
         print('Syllables from MaD TwinNet : {}'.format(item['mad']))
