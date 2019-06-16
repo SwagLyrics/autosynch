@@ -15,6 +15,7 @@ from scipy import signal
 from .audio_io import wav_read, wav_write
 from .settings import dataset_paths, output_audio_paths, wav_quality
 from .signal_transforms import stft, i_stft, ideal_ratio_masking
+from ...config import resourcesdir
 
 __author__ = ['Konstantinos Drossos -- TUT', 'Stylianos Mimilakis -- Fraunhofer IDMT']
 __docformat__ = 'reStructuredText'
@@ -221,25 +222,33 @@ def data_process_results_testing(index, voice_true, bg_true, voice_predicted,
     return sdr, sir
 
 
-def _get_files_lists(subset):
+def _get_files_lists(subset, sources=[], vocals=[]):
     """Getting the files lists.
 
     :param subset: The subset that we are interested in (i.e. training or testing).
     :type subset: str
+    :param sources: List of files to be processed, in mixed form.
+    :type sources: list[str]
+    :param vocals: List of vocal tracks corresponding to files in "sources".
+    :type vocals: list[str]
     :return: The lists with the file paths of the files that we want to use.
     :rtype: (list[str], list[str])
     """
-    specific_dir = 'Dev' if subset == 'training' else 'Test'
-    mixtures_dir = os.path.join(dataset_paths['mixtures'], specific_dir)
-    sources_dir = os.path.join(dataset_paths['sources'], specific_dir)
 
-    mixtures_list = [os.path.join(mixtures_dir, file_path)
-                     for file_path in sorted(os.listdir(mixtures_dir))]
+    if subset == 'testing':
+        sources_list = [ os.path.join(resourcesdir, 'examples/LizNelson_Rainfall_MIX.wav'),
+                   os.path.join(resourcesdir, 'examples/MarvinGaye_Grapevine_MIX.wav') ]
+        vocals_list = [ os.path.join(resourcesdir, 'examples/LizNelson_Rainfall_VOCALS.wav'),
+                   os.path.join(resourcesdir, 'examples/MarvinGaye_Grapevine_VOCALS.wav') ]
+        return sources_list, vocals_list
+    elif subset != 'training':
+        raise TypeError('"subset" must be either "testing" or "training"')
+    if len(sources) == 0 or len(vocals) == 0:
+        raise IndexError('"sources" and "vocals" must not be empty')
+    if len(sources) != len(vocals):
+        raise IndexError('"sources" and "vocals" must be the same length')
 
-    sources_list = [os.path.join(sources_dir, file_path)
-                    for file_path in sorted(os.listdir(sources_dir))]
-
-    return mixtures_list, sources_list
+    return sources, vocals
 
 
 def _context_based_reshaping(mix, voice, context_length, window_size):
