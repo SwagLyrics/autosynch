@@ -1,0 +1,9 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+cuda90=1.0=h6433d27_0
+cudatoolkit=9.0=h13b8566_0
+cudnn=7.3.1=cuda9.0_0
+numpy=1.16.3=py36h7e9f1db_0
+pytorch=1.1.0=py3.6_cuda9.0.176_cudnn7.5.1_0
+scipy=1.2.1=py36h7c811a0_0
