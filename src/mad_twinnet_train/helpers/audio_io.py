@@ -41,6 +41,7 @@ def wav_read(file_name, mono=False):
     :return: The data and the sample rate.
     :rtype: (numpy.core.multiarray.ndarray, int)
     """
+
     try:
         samples, sample_rate = _load_wav_with_wave(file_name)
 
@@ -59,9 +60,6 @@ def wav_read(file_name, mono=False):
     except wave.Error:
         # 32 bit case
         samples, sample_rate = _load_wav_with_scipy(file_name)
-
-    if samples.shape[1] == 1:
-        samples = samples.squeeze(-1)
 
     # mono conversion
     if mono and samples.ndim == 2:

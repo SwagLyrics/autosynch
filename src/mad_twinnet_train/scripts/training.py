@@ -146,9 +146,8 @@ def _one_epoch(module, epoch_it, solver, separation_loss, twin_reg_loss,
     printing.print_msg(training_output_string.format(
         ep=epoch_index,
         t=time_end - time_start,
-        **{k: v for k, v in zip(['l_m', 'l_d', 'l_tw', 'l_twin'],
-                                [sum(i)/len(iter_results)
-                                 for i in zip(*iter_results)])
+        **{k: v for k, v in dict(zip(['l_m', 'l_d', 'l_tw', 'l_twin'],
+                [sum(i)/len(iter_results) for i in zip(*iter_results)])).items()
            }
     ))
 

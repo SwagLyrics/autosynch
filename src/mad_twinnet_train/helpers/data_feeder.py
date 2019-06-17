@@ -336,8 +336,8 @@ def _get_data_training(current_set, set_size, mixtures_list, sources_list,
     ms_train, vs_train = None, None
 
     for index in range(len(m_list)):
-        mix = wav_read(m_list[index].joinpath('mixture.wav'), mono=False)[0]
-        vox = wav_read(s_list[index].joinpath('vocals.wav'), mono=False)[0]
+        mix = wav_read(m_list[index], mono=False)[0]
+        vox = wav_read(s_list[index], mono=False)[0]
 
         ms_seg = stft(
             0.5 * np.sum(mix, axis=-1), window_values,
