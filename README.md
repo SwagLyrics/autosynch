@@ -1,5 +1,9 @@
 # autosynch repository
 
+## installation
+To install, run `git clone` and then `pip install -r requirements.txt`.
+
+## usage
 To use, you must put a trained model into the `src/mad_twinnet/outputs/states`
 directory. The files of the model must be exactly:
 - rnn_enc.pt
