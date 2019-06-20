@@ -1,16 +1,5 @@
 # autosynch repository
 
-To use, you must put a trained model into the `src/mad_twinnet/outputs/states`
-directory. The files of the model must be exactly:
-- rnn_enc.pt
-- rnn_dec.pt
-- fnn.pt
-- denoiser.pt
+The `train` branch is used for training new models. Mixtures should be placed in `mad_twinnet_train/dataset/mixtures` and vocals should be placed in `mad_twinnet_train/dataset/sources`. They should be named such that when sorted alphabetically, the files correspond with one another (i.e. the first file sorted alphabetically in `vocals` should be the vocals for the first file sorted alphabetically in `mixtures`). Run `mad_twinnet_train/scripts/training.py` to use.
 
-To download the pre-trained model from the authors of MaD TwinNet, go [here](https://doi.org/10.5281/zenodo.1164592).
-A new model based on more popular music is in the works and is coming soon.
-
-After the model is installed, the two main functions are get_vocal_syllables()
-and eval_by_syllable() in `src/eval.py`. Run `src/eval.py` as `__main__` to get
-an example run on Liz Nelson's Rainfall and Marvin Gaye's I Heard It Through the
-Grapevine.
+If you are using the MedleyDB dataset like I am, you can place `MedleyDB_V1.tar.gz` (or the second version if you'd like) into the `resources` directory, then run `extract.py` to extract just the mixtures and the vocal melodies into the `dataset` directory.
