@@ -1,7 +1,10 @@
 # autosynch repository
 
 ## installation
-To install, run `git clone` and then `pip install -r requirements.txt`.
+To install, do the following:
+- `git clone` this branch (use `-b phase1 --single-branch` to clone just this branch)
+- `cd autosynch`
+- `pip install -r requirements.txt`
 
 ## usage
 To use, you must put a trained model into the `src/mad_twinnet/outputs/states`
