@@ -7,8 +7,8 @@ from scripts.training import training_process
 root_dir = '/Users/Chris/autosynch'
 tar_path = os.path.join(root_dir, 'resources/MedleyDB_V1.tar.gz')
 metadata_dir = os.path.join(root_dir, 'resources/Metadata')
-mixtures_dir = os.path.join(root_dir, 'src/mad_twinnet_train/dataset/mixtures')
-sources_dir = os.path.join(root_dir, 'src/mad_twinnet_train/dataset/sources')
+mixtures_dir = os.path.join(root_dir, 'mad_twinnet_train/dataset/mixtures')
+sources_dir = os.path.join(root_dir, 'mad_twinnet_train/dataset/sources')
 
 skip = dict.fromkeys(os.listdir(mixtures_dir))
 
