@@ -5,24 +5,41 @@ import parselmouth
 
 from config import resourcesdir
 
-def snd(fpath, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
-    """
-    Runs PRAAT script to do syllable analysis on audio file.
+class SND(object):
+    def __init__(self, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
+        """
+        Syllable nuclei detector. Loads PRAAT script.
 
-    :param fpath: path of audio file
-    :param **kwargs: see praat-script.txt for keyword args description
-    :return: number of syllables
-    """
+        :params: see praat-script.txt for keyword args description
+        """
 
-    # Check path existence
-    if not os.path.exists(fpath):
-        logging.error('%s does not exist', fpath)
-        raise FileNotFoundError('File does not exist')
+        self.silencedb = silencedb
+        self.mindip = mindip
+        self.minpause = minpause
+        self.showtext = showtext
 
-    # Run PRAAT script
-    with open(os.path.join(resourcesdir,'praat-script.txt'), 'r') as f:
-        script = f.read()
-    script = script.format(silencedb, mindip, minpause, showtext, fpath)
-    syllables = parselmouth.praat.run(script, capture_output=True)[1].strip()
+        # Run PRAAT script
+        with open(os.path.join(resourcesdir, 'praat-script.txt'), 'r') as f:
+            self.script = f.read()
 
-    return syllables
+    def run(self, fpath):
+        """
+        Runs PRAAT script.
+
+        :param fpath: Path to audio file to analyze.
+        :type fpath: str
+        :return: Number of syllables
+        :rtype: int
+        """
+
+        # Check path existence
+        if not os.path.exists(fpath):
+            logging.error('%s does not exist', fpath)
+            raise FileNotFoundError('File does not exist')
+
+        script = self.script.format(silencedb=self.silencedb,
+                                    mindip=self.mindip,
+                                    minpause=self.minpause,
+                                    showtext=self.showtext,
+                                    fpath=fpath)
+        return parselmouth.praat.run(script, capture_output=True)[1].strip()
