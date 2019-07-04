@@ -1,5 +1,6 @@
-import pyphen
 import re
+import string
+import pyphen
 from syllabipy.legalipy import LegaliPy, getOnsets
 from syllabipy.sonoripy import SonoriPy
 
@@ -515,9 +516,18 @@ def _sonoripy(words):
 
     return syllables
 
+def _strip_split(text):
+    remove = string.punctuation.replace("'", '')
+    text = text.replace('-', ' ')
+    text = text.translate(str.maketrans('', '', remove)).split()
+
+    return text
+
 def eval_hyphenation(test_set, marked_set):
     with open(test_set, 'r') as test, open(marked_set, 'r') as marked:
-        test_words = test.read().split()
+        test_words = _strip_split(test.read())
+        for word in test_words:
+            print(word)
         marked_words = marked.read().split()
 
         if len(test_words) != len(marked_words):
@@ -534,42 +544,44 @@ def eval_hyphenation(test_set, marked_set):
         print('Running SonoriPy...')
         sonoripy_syl = _sonoripy(test_words)
 
-        pyphen_err   = []
-        liang_err    = []
-        legalipy_err = []
-        sonoripy_err = []
+        pyphen_err   = set()
+        liang_err    = set()
+        legalipy_err = set()
+        sonoripy_err = set()
+
+        unique_words = len(set(test_words))
 
         for i in range(len(marked_words)):
             marked_syl = marked_words[i].count('-') + 1
             if marked_syl != pyphen_syl[i]:
-                pyphen_err.append(test_words[i])
+                pyphen_err.add(test_words[i])
             if marked_syl != liang_syl[i]:
-                liang_err.append(test_words[i])
+                liang_err.add(test_words[i])
             if marked_syl != legalipy_syl[i]:
-                legalipy_err.append(test_words[i])
+                legalipy_err.add(test_words[i])
             if marked_syl != sonoripy_syl[i]:
-                sonoripy_err.append(test_words[i])
+                sonoripy_err.add(test_words[i])
 
         print('Hyphenation Results:')
         print('------------------------\n')
         print('Pyphen:')
         print('-----------')
-        print('Error: {}'.format(len(pyphen_err)))
+        print('Error: {}/{}'.format(len(pyphen_err), unique_words))
         print(pyphen_err)
         print('\n')
         print('Liang:')
         print('-----------')
-        print('Error: {}'.format(len(liang_err)))
+        print('Error: {}/{}'.format(len(liang_err), unique_words))
         print(liang_err)
         print('\n')
         print('LegaliPy:')
         print('-----------')
-        print('Error: {}'.format(len(legalipy_err)))
+        print('Error: {}/{}'.format(len(legalipy_err), unique_words))
         print(legalipy_err)
         print('\n')
         print('SonoriPy:')
         print('-----------')
-        print('Error: {}'.format(len(sonoripy_err)))
+        print('Error: {}/{}'.format(len(sonoripy_err), unique_words))
         print(sonoripy_err)
         print('\n')
 
@@ -577,4 +589,6 @@ if __name__ == '__main__':
     import os
     from config import resourcesdir
 
-    eval_hyphenation(os.path.join(resourcesdir, 'lyrics_test.txt'), os.path.join(resourcesdir, 'lyrics_marked.txt'))
+    test = os.path.join(resourcesdir, 'lyrics_test.txt')
+    marked = os.path.join(resourcesdir, 'lyrics_marked.txt')
+    eval_hyphenation(test, marked)
