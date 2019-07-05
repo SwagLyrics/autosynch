@@ -516,6 +516,30 @@ def _sonoripy(words):
 
     return syllables
 
+def _simple(words):
+    vowels = 'aeiouy'
+
+    syllables = []
+    for word in words:
+        n_vowels = 0
+        prev_vowel = False
+
+        for ch in word:
+            is_vowel = False
+            if ch in vowels:
+                if not prev_vowel:
+                    n_vowels += 1
+                is_vowel = True
+                prev_vowel = True
+
+            if not is_vowel:
+                prev_vowel = False
+        if word.endswith('es') or word.endswith('e'):
+            n_vowels -= 1
+        syllables.append(n_vowels)
+
+    return syllables
+
 def _strip_split(text):
     remove = string.punctuation.replace("'", '')
     text = text.replace('-', ' ')
@@ -526,8 +550,6 @@ def _strip_split(text):
 def eval_hyphenation(test_set, marked_set):
     with open(test_set, 'r') as test, open(marked_set, 'r') as marked:
         test_words = _strip_split(test.read())
-        for word in test_words:
-            print(word)
         marked_words = marked.read().split()
 
         if len(test_words) != len(marked_words):
@@ -543,11 +565,14 @@ def eval_hyphenation(test_set, marked_set):
         legalipy_syl = _legalipy(test_words)
         print('Running SonoriPy...')
         sonoripy_syl = _sonoripy(test_words)
+        print('Running simple algorithm...')
+        simple_syl   = _simple(test_words)
 
         pyphen_err   = set()
         liang_err    = set()
         legalipy_err = set()
         sonoripy_err = set()
+        simple_err   = set()
 
         unique_words = len(set(test_words))
 
@@ -561,6 +586,8 @@ def eval_hyphenation(test_set, marked_set):
                 legalipy_err.add(test_words[i])
             if marked_syl != sonoripy_syl[i]:
                 sonoripy_err.add(test_words[i])
+            if marked_syl != simple_syl[i]:
+                simple_err.add(test_words[i])
 
         print('Hyphenation Results:')
         print('------------------------\n')
@@ -584,11 +611,16 @@ def eval_hyphenation(test_set, marked_set):
         print('Error: {}/{}'.format(len(sonoripy_err), unique_words))
         print(sonoripy_err)
         print('\n')
+        print('Simple algorithm:')
+        print('-----------')
+        print('Error: {}/{}'.format(len(simple_err), unique_words))
+        print(simple_err)
+        print('\n')
 
 if __name__ == '__main__':
     import os
     from config import resourcesdir
 
-    test = os.path.join(resourcesdir, 'lyrics_test.txt')
-    marked = os.path.join(resourcesdir, 'lyrics_marked.txt')
+    test = os.path.join(resourcesdir, 'lhyph.txt')
+    marked = os.path.join(resourcesdir, 'mhyph.txt')
     eval_hyphenation(test, marked)
