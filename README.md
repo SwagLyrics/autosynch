@@ -2,7 +2,7 @@
 
 ## installation
 To install, do the following:
-- `git clone` this branch (use `-b phase1 --single-branch` to clone just this branch)
+- `git clone` this branch (use `-b master --single-branch` to clone just this branch)
 - `cd autosynch`
 - `pip install -r requirements.txt`
 
