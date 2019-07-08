@@ -4,4 +4,6 @@ praat-parselmouth>=0.3.2
 scipy>=1.1.0
 Pyphen>=0.9.5
 PySoundFile>=0.9.0.post1
+syllabipy>=0.2
 torch>=0.4.1
+torchvision>=0.3.0
