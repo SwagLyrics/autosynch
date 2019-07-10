@@ -547,80 +547,79 @@ def _strip_split(text):
 
     return text
 
-def eval_hyphenation(test_set, marked_set):
-    with open(test_set, 'r') as test, open(marked_set, 'r') as marked:
-        test_words = _strip_split(test.read())
-        marked_words = marked.read().split()
+def eval_hyphenation(test_words, marked_words):
+    if len(test_words) != len(marked_words):
+        print(len(test_words))
+        print(len(marked_words))
+        raise KeyError('Test set and marked set do not match')
 
-        if len(test_words) != len(marked_words):
-            print(len(test_words))
-            print(len(marked_words))
-            raise KeyError()
+    pyphen_syl   = _pyphen(test_words)
+    liang_syl    = _liang(test_words)
+    legalipy_syl = _legalipy(test_words)
+    sonoripy_syl = _sonoripy(test_words)
+    simple_syl   = _simple(test_words)
 
-        print('Running Pyphen...')
-        pyphen_syl   = _pyphen(test_words)
-        print('Running Liang...')
-        liang_syl    = _liang(test_words)
-        print('Running LegaliPy...')
-        legalipy_syl = _legalipy(test_words)
-        print('Running SonoriPy...')
-        sonoripy_syl = _sonoripy(test_words)
-        print('Running simple algorithm...')
-        simple_syl   = _simple(test_words)
+    pyphen_err   = set()
+    liang_err    = set()
+    legalipy_err = set()
+    sonoripy_err = set()
+    simple_err   = set()
 
-        pyphen_err   = set()
-        liang_err    = set()
-        legalipy_err = set()
-        sonoripy_err = set()
-        simple_err   = set()
+    for i in range(len(marked_words)):
+        marked_syl = marked_words[i].count('-') + 1
+        if marked_syl != pyphen_syl[i]:
+            pyphen_err.add(test_words[i])
+        if marked_syl != liang_syl[i]:
+            liang_err.add(test_words[i])
+        if marked_syl != legalipy_syl[i]:
+            legalipy_err.add(test_words[i])
+        if marked_syl != sonoripy_syl[i]:
+            sonoripy_err.add(test_words[i])
+        if marked_syl != simple_syl[i]:
+            simple_err.add(test_words[i])
 
-        unique_words = len(set(test_words))
-
-        for i in range(len(marked_words)):
-            marked_syl = marked_words[i].count('-') + 1
-            if marked_syl != pyphen_syl[i]:
-                pyphen_err.add(test_words[i])
-            if marked_syl != liang_syl[i]:
-                liang_err.add(test_words[i])
-            if marked_syl != legalipy_syl[i]:
-                legalipy_err.add(test_words[i])
-            if marked_syl != sonoripy_syl[i]:
-                sonoripy_err.add(test_words[i])
-            if marked_syl != simple_syl[i]:
-                simple_err.add(test_words[i])
-
-        print('Hyphenation Results:')
-        print('------------------------\n')
-        print('Pyphen:')
-        print('-----------')
-        print('Error: {}/{}'.format(len(pyphen_err), unique_words))
-        print(pyphen_err)
-        print('\n')
-        print('Liang:')
-        print('-----------')
-        print('Error: {}/{}'.format(len(liang_err), unique_words))
-        print(liang_err)
-        print('\n')
-        print('LegaliPy:')
-        print('-----------')
-        print('Error: {}/{}'.format(len(legalipy_err), unique_words))
-        print(legalipy_err)
-        print('\n')
-        print('SonoriPy:')
-        print('-----------')
-        print('Error: {}/{}'.format(len(sonoripy_err), unique_words))
-        print(sonoripy_err)
-        print('\n')
-        print('Simple algorithm:')
-        print('-----------')
-        print('Error: {}/{}'.format(len(simple_err), unique_words))
-        print(simple_err)
-        print('\n')
+    return pyphen_err, liang_err, legalipy_err, sonoripy_err, simple_err
 
 if __name__ == '__main__':
     import os
     from config import resourcesdir
 
-    test = os.path.join(resourcesdir, 'lhyph.txt')
-    marked = os.path.join(resourcesdir, 'mhyph.txt')
-    eval_hyphenation(test, marked)
+    fpath = os.path.join(resourcesdir, 'syllables.txt')
+    test = {}
+    marked = []
+    with open(fpath, 'r') as f:
+        for line in f.read().splitlines():
+            line = line.split()
+            test[line[0]] = line[2]
+            marked.append(line[1])
+
+    # print(set([i.replace('-', '') for i in marked]) - set(test.keys()))
+    pyphen_err, liang_err, legalipy_err, sonoripy_err, simple_err = eval_hyphenation(list(test.keys()), marked)
+
+    print('Hyphenation Results:')
+    print('------------------------\n')
+    print('Pyphen:')
+    print('-----------')
+    print('Error: {}'.format(sum([float(test[i]) for i in pyphen_err.intersection(test.keys())])))
+    print(pyphen_err)
+    print('\n')
+    print('Liang:')
+    print('-----------')
+    print('Error: {}'.format(sum([float(test[i]) for i in liang_err.intersection(test.keys())])))
+    print(liang_err)
+    print('\n')
+    print('LegaliPy:')
+    print('-----------')
+    print('Error: {}'.format(sum([float(test[i]) for i in legalipy_err.intersection(test.keys())])))
+    print(legalipy_err)
+    print('\n')
+    print('SonoriPy:')
+    print('-----------')
+    print('Error: {}'.format(sum([float(test[i]) for i in sonoripy_err.intersection(test.keys())])))
+    print(sonoripy_err)
+    print('\n')
+    print('Simple algorithm:')
+    print('-----------')
+    print('Error: {}'.format(sum([float(test[i]) for i in simple_err.intersection(test.keys())])))
+    print(simple_err)
+    print('\n')
