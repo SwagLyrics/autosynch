@@ -65,16 +65,16 @@ def sba(input, marked_set):
             elif lattice[node].distance + 1 == lattice[adjacent].distance:
                 lattice[adjacent].sinputs.append(in_arc)
 
-    # Decision function 2: get shortest arc length
+    # Decision function 2: scoring (see Marchand & Damper, 2000)
     path = ''
     node = ('#', len(input)-1)
     while node != ('#', 0):
         path = node[0] + path
-        min_freq = float('inf')
-
         if not lattice[node].sinputs:
             print('UserWarning: No syllabification found')
             return None
+            
+        min_freq = float('inf')
         for arc in lattice[node].sinputs:
             if arc[2] < min_freq:
                 node, arc_string, min_freq = arc
