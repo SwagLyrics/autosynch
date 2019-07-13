@@ -3,7 +3,7 @@ import sys
 import warnings
 import logging
 
-import snd
+from snd import SND
 from config import resourcesdir
 from mad_twinnet.scripts import twinnet
 
@@ -58,10 +58,11 @@ def get_vocal_syllables(source, output_dir=None, get_background=False):
 
     # SND on each output vocal file
     logging.info('Beginning syllable nuclei detection...')
+    snd = SND()
     snd_output = []
     for files in output_file_names:
         try:
-            syllables = int(snd.snd(files[0]))
+            syllables = int(snd.run(files[0]))
             snd_output.append(syllables)
             logging.info('%s: %s syllables', files[0], syllables)
         except Exception as e:
@@ -90,7 +91,9 @@ def eval_by_syllable(source, vocals, output_dir=None, get_background=False):
                        'off': difference_between_mad_and_src_results
                       }]
     """
+
     eval_output = []
+    snd = SND()
 
     if isinstance(source, str):
         source = [source]
@@ -105,7 +108,7 @@ def eval_by_syllable(source, vocals, output_dir=None, get_background=False):
         if syllables is None:
             warnings.warn('No syllable data for {}'.format(source[index]), RuntimeWarning)
             continue
-        src_syllables = int(snd.snd(vocals[index]))
+        src_syllables = int(snd.run(vocals[index]))
         eval_item = { 'name': source[index],
                       'mad': syllables,
                       'src': src_syllables,
