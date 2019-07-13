@@ -211,15 +211,9 @@ def data_process_results_testing(index, voice_true, bg_true, voice_predicted,
         if get_background:
             bg_hat_path = output_file_name[1]
 
-        sdr = None
-        sir = None
-
     wav_write(voice_hat, file_name=voice_hat_path, **wav_quality)
     if get_background:
         wav_write(bg_hat, file_name=bg_hat_path, **wav_quality)
-
-    return sdr, sir
-
 
 def _get_files_lists(subset):
     """Getting the files lists.

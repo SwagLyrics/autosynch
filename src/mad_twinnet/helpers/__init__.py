@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__author__ = ['Konstantinos Drossos -- TUT', 'Stylianos Mimilakis -- Fraunhofer IDMT']
+from . import audio_io
+from . import data_feeder
+from . import signal_transforms
+
+__author__ = 'Konstantinos Drossos -- TAU', 'Stylianos Mimilakis -- Fraunhofer IDMT'
 __docformat__ = 'reStructuredText'
+__all__ = [
+    'audio_io', 'data_feeder',
+    'printing', 'signal_transforms'
+]
 
 # EOF

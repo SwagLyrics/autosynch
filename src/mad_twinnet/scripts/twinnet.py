@@ -14,10 +14,10 @@ import logging
 import numpy as np
 import torch
 
+from ..modules import MaD
 from ..helpers.data_feeder import data_feeder_testing, data_process_results_testing
 from ..helpers.settings import debug, hyper_parameters, output_states_path, \
        training_constants, usage_output_string_per_example, usage_output_string_total
-from ..modules import RNNEnc, RNNDec, FNNMasker, FNNDenoiser
 
 __author__ = ['Konstantinos Drossos -- TUT', 'Stylianos Mimilakis -- Fraunhofer IDMT']
 __docformat__ = 'reStructuredText'
@@ -75,51 +75,25 @@ def twinnet_process(sources_list, output_file_names=None, get_background=False):
     logging.info('MaD TwinNet successfully initialized')
 
     # Masker modules
-    logging.info('Initializing masker modules...')
+    logging.info('Initializing training weights...')
     try:
-        rnn_enc = RNNEnc(hyper_parameters['reduced_dim'], hyper_parameters['context_length'], debug)
-        rnn_dec = RNNDec(hyper_parameters['rnn_enc_output_dim'], debug)
-        fnn = FNNMasker(
-            hyper_parameters['rnn_enc_output_dim'],
-            hyper_parameters['original_input_dim'],
-            hyper_parameters['context_length']
-        )
-        logging.info('Masker modules successfully initialized')
-    except Exception as e:
-        logging.error('Exception occurred with masker modules', exc_info=True)
-        sys.exit()
+        mad = MaD(
+            rnn_enc_input_dim=hyper_parameters['reduced_dim'],
+            rnn_dec_input_dim=hyper_parameters['rnn_enc_output_dim'],
+            original_input_dim=hyper_parameters['original_input_dim'],
+            context_length=hyper_parameters['context_length'])
 
-    # Denoiser modules
-    logging.info('Initializing denoiser modules...')
-    try:
-        denoiser = FNNDenoiser(hyper_parameters['original_input_dim'])
+        mad.load_state_dict(torch.load(output_states_path['mad']))
+        mad = mad.to(device).eval()
 
-        rnn_enc.load_state_dict(torch.load(output_states_path['rnn_enc']))
-        rnn_enc.to(device)
-
-        rnn_dec.load_state_dict(torch.load(output_states_path['rnn_dec']))
-        rnn_dec.to(device)
-
-        fnn.load_state_dict(torch.load(output_states_path['fnn']))
-        fnn.to(device)
-
-        denoiser.load_state_dict(torch.load(output_states_path['denoiser']))
-        denoiser.to(device)
-
-        logging.info('Denoiser modules successfully initialized')
-    except Exception as e:
-        logging.error('Exception occurred with denoiser modules', exc_info=True)
-        sys.exit()
-
-    logging.info('Initializing data iterator...')
-    try:
         testing_it = data_feeder_testing(
             window_size=hyper_parameters['window_size'], fft_size=hyper_parameters['fft_size'],
             hop_size=hyper_parameters['hop_size'], seq_length=hyper_parameters['seq_length'],
             context_length=hyper_parameters['context_length'], batch_size=1,
             debug=debug, sources_list=sources_list
         )
-        logging.info('Data iterator successfully initialized')
+
+        logging.info('Training weights initialized')
     except Exception as e:
         logging.error('Exception occurred getting data iterator', exc_info=True)
         sys.exit()
@@ -133,14 +107,10 @@ def twinnet_process(sources_list, output_file_names=None, get_background=False):
 
         mix, mix_magnitude, mix_phase, voice_true, bg_true = data
 
-        voice_predicted = np.zeros(
-            (
+        voice_predicted = np.zeros((
                 mix_magnitude.shape[0],
                 hyper_parameters['seq_length'] - hyper_parameters['context_length'] * 2,
-                hyper_parameters['window_size']
-            ),
-            dtype=np.float32
-        )
+                hyper_parameters['window_size']), dtype=np.float32)
 
         logging.info('Applying MaD TwinNet per batch...')
         n_batches = int(mix_magnitude.shape[0] / training_constants['batch_size'])
@@ -148,18 +118,16 @@ def twinnet_process(sources_list, output_file_names=None, get_background=False):
             b_start = batch * training_constants['batch_size']
             b_end = (batch + 1) * training_constants['batch_size']
 
-            v_in = torch.from_numpy(mix_magnitude[b_start:b_end, :, :]).to(device)
+            v_in = torch.from_numpy(
+                mix_magnitude[b_start:b_end, :, :]).to(device)
 
-            tmp_voice_predicted = rnn_enc(v_in)
-            tmp_voice_predicted = rnn_dec(tmp_voice_predicted)
-            tmp_voice_predicted = fnn(tmp_voice_predicted, v_in)
-            tmp_voice_predicted = denoiser(tmp_voice_predicted)
+            voice_predicted[b_start:b_end, :, :] = mad(
+                v_in).v_j_filt.cpu().detach().numpy()
 
-            voice_predicted[b_start:b_end, :, :] = tmp_voice_predicted.data.cpu().numpy()
             logging.info('Batch %d/%d complete', batch+1, n_batches)
 
-        logging.info('Calculating SDR, SIR and writing output to file...')
-        sdr, sir = data_process_results_testing(
+        logging.info('Writing output to file...')
+        data_process_results_testing(
             index=index, voice_true=voice_true, bg_true=bg_true,
             voice_predicted=voice_predicted,
             window_size=hyper_parameters['window_size'], mix=mix, mix_magnitude=mix_magnitude,
@@ -172,9 +140,8 @@ def twinnet_process(sources_list, output_file_names=None, get_background=False):
         e_time = time.time()
 
         logging.info(usage_output_string_per_example.format(
-            f=os.path.basename(sources_list[index]),
-            t=e_time - s_time
-        ))
+            f=sources_list[index],
+            t=e_time - s_time))
 
         total_time += e_time - s_time
 
