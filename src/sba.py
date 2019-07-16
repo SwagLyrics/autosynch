@@ -1,4 +1,5 @@
 from collections import Counter, deque
+from operator import itemgetter
 
 def sba(input, marked_set):
     # Node data class
@@ -64,24 +65,66 @@ def sba(input, marked_set):
                 lattice[adjacent].sinputs.append(in_arc)
             elif lattice[node].distance + 1 == lattice[adjacent].distance:
                 lattice[adjacent].sinputs.append(in_arc)
+    queue.clear()
 
     # Decision function 2: score by strategy
-    path = ''
-    node = ('#', len(input)-1)
-    while node != ('#', 0):
-        path = node[0] + path
+    # PF = product, SDPS = standard deviation, WL = weak link
+    # Calculate scores
+    paths = []
+    def dfs(node, path, arcs):
+        if node == ('#', 0):
+            pf, sdps, wl = 1, 0, float('inf')
+            mean = sum(arcs)/len(arcs)
+            for arc in arcs:
+                pf *= arc
+                sdps += (arc-mean)**2
+                wl = min(wl, arc)
+            sdps /= len(arcs)
+
+            paths.append((path, pf, sdps, wl))
+            return
         if not lattice[node].sinputs:
-            print('UserWarning: No syllabification found')
-            return None
+            return
 
-        min_freq = float('inf')
+        path = node[0] + path
         for arc in lattice[node].sinputs:
-            if arc[2] < min_freq:
-                node, arc_string, min_freq = arc
-        path = arc_string + path
-    path = path.replace('*', '')[:-1]
+            _arcs = arcs[:]
+            _arcs.append(arc[2])
+            dfs(arc[0], arc[1]+path, _arcs)
 
-    return path
+    dfs(('#', len(input)-1), '', [])
+    if not paths:
+        print('UserWarning: No syllabification found')
+        return None
+
+    # Assign point values
+    scores = {path[0]: 0 for path in paths}
+    for s in range(1, 4):
+        ranking = sorted(paths, key=itemgetter(s), reverse=True)
+        rank, cand, cval = len(paths), 0, ranking[0][s]
+
+        for i, path in enumerate(ranking):
+            if path[s] < cval:
+                points = rank - (cand-1)/2
+                for t in ranking[i-cand:i]:
+                    scores[t[0]] += points
+                rank -= 1
+                cand, cval = 1, path[s]
+            else:
+                cand += 1
+
+        points = rank - (cand-1)/2
+        for t in ranking[-cand:]:
+            scores[t[0]] += points
+
+    shortest_path = max(scores.items(), key=itemgetter(1))[0][:-1]
+    return shortest_path
+
+def _strip_split(text):
+    import re
+    text = re.sub("[^a-zA-Z\s]+", "", text).lower().split()
+
+    return text
 
 if __name__ == '__main__':
     import os
