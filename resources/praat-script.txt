@@ -24,7 +24,7 @@ silencedb = {silencedb}
 mindip = {mindip}
 minpause = {minpause}
 showtext = {showtext}
-filepath$ = "{fpath}"
+filepath$ = "{file_path}"
 
 # read files
 Read from file... 'filepath$'
