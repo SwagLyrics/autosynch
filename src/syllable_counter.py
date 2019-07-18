@@ -8,31 +8,64 @@ References:
   analogy of English?" Nat. Lang. Eng. 13(1) 2006, pp. 1-24.
 """
 
+import os
 from collections import Counter, deque
 from operator import itemgetter
+from config import cmudict_path, nettalk_path
 
-def sba(inputs, marked_set):
-    # Node data class
-    class data(object):
-        def __init__(self):
-            self.outputs = Counter() # Set of arcs going out
-            self.sinputs = [] # Set of arcs coming in, filled by BFS
-            self.distance = float('inf') # From origin, filled by BFS
 
-    # Initialize and format lexical dataset
-    lex = []
-    for word in marked_set:
-        n = '#'
-        for i, ch in enumerate(word):
-            n += ch
-            if i < len(word)-1 and word[i+1] != '-' and ch != '-':
-                n += '*'
-        n += '#'
-        lex.append(n)
+class SyllableCounter(object):
+    def __init__(self, sba_lexicon_path=nettalk_path, cmudict_path=cmudict_path):
+        self._load_data(sba_lexicon_path, cmudict_path)
 
-    # Iterate through inputs
-    outputs = []
-    for input in inputs:
+    def _load_data(self, sba_lexicon_path, cmudict_path):
+        self.lexicon = []
+        self.counter = {}
+
+        with open(sba_lexicon_path, 'r') as f, open(cmudict_path, 'r') as g:
+            sba_lexicon = f.read().splitlines()
+            cmudict = g.read().splitlines()
+
+        for line in sba_lexicon:
+            if not line or line.startswith('#'):
+                continue
+            line = line.split()
+            word = line[0]
+            syll = line[2]
+            count = 0
+
+            hyphenated_word = ''
+            for i, ch in enumerate(word):
+                if i < len(word)-1 and syll[i] != '>' and syll[i+1] != '<':
+                    hyphenated_word += ch + '-'
+                    count += 1
+                else:
+                    hyphenated_word += ch + '*'
+
+            self.lexicon.append('#{}#'.format(hyphenated_word[:-1]))
+            self.counter[word] = count + 1
+
+        for line in cmudict:
+            if not line or line.startswith(';;;'):
+                continue
+            word = line.split(None, 1)[0].lower()
+            count = sum(ch.isdigit() for ch in line)
+
+            if word.endswith(')'):
+                continue
+
+            if word not in self.counter or self.counter[word] < count:
+                self.counter[word] = count
+
+    def _sba(self, input):
+        # Node data class
+        class data(object):
+            def __init__(self):
+                self.outputs = Counter() # Set of arcs going out
+                self.sinputs = [] # Set of arcs coming in, filled by BFS
+                self.distance = float('inf') # From origin, filled by BFS
+
+        # Format input
         input = '#{}#'.format(input.replace('', '*')[1:-1])
 
         # Pronunciation lattice
@@ -40,7 +73,7 @@ def sba(inputs, marked_set):
 
         # Substring matcher and lattice builder
         substring = []
-        for entry in lex:
+        for entry in self.lexicon:
             for offset in range(-len(input)+3, len(entry)-2):
                 for i in range(max(0, -offset), min(len(input), len(entry)-offset)):
                     if input[i] == entry[i+offset] or (input[i] == '*' and entry[i+offset] == '-'):
@@ -132,23 +165,11 @@ def sba(inputs, marked_set):
                 scores[t[0]] += points
 
         shortest_path = max(scores.items(), key=itemgetter(1))[0][:-1]
-        outputs.append(shortest_path.replace('*', ''))
+        n_syllables = shortest_path.count('-') + 1
+        return n_syllables, shortest_path
 
-    return outputs
-
-if __name__ == '__main__':
-    import os
-    from config import resourcesdir
-
-    db_path = os.path.join(resourcesdir, 'syllables.txt')
-
-    marked_set = []
-    with open(db_path, 'r') as f:
-        for line in f.read().splitlines():
-            marked_set.append(line.split()[1])
-
-    input = 'oregano'
-    output = sba([input], marked_set)
-
-    print('Input: ' + input)
-    print('SBA:   ' + output[0])
+    def get_syllable_count(self, word):
+        if word in self.counter:
+            return self.counter[word]
+        else:
+            return self._sba(word)[0]

@@ -1,8 +1,7 @@
 import re
-from swaglyrics.cli import get_lyrics
 from num2words import num2words
 
-regex = re.compile("[^a-zA-Z\s]+")
+regex = re.compile("[^a-zA-Z\s']+")
 
 def format(word):
     if word == '[?]':
