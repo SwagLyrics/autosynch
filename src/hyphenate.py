@@ -3,6 +3,7 @@ import string
 import pyphen
 from syllabipy.legalipy import LegaliPy, getOnsets
 from syllabipy.sonoripy import SonoriPy
+from sba import sba
 
 patterns = (
 # Knuth and Liang's original hyphenation patterns from classic TeX.
@@ -540,12 +541,22 @@ def _simple(words):
 
     return syllables
 
-def _strip_split(text):
-    remove = string.punctuation.replace("'", '')
-    text = text.replace('-', ' ')
-    text = text.translate(str.maketrans('', '', remove)).split()
+def _sba(words):
+    import os
+    from config import resourcesdir
 
-    return text
+    # TODO: Use different dict than test set lol
+    db_path = os.path.join(resourcesdir, 'syllables.txt')
+
+    marked_set = []
+    with open(db_path, 'r') as f:
+        for line in f.read().splitlines():
+            marked_set.append(line.split()[1])
+
+    syllables = []
+    for word in sba(words, marked_set):
+        syllables.sppend(word.count('-')+1)
+    return syllables
 
 def eval_hyphenation(test_words, marked_words):
     if len(test_words) != len(marked_words):
@@ -558,12 +569,14 @@ def eval_hyphenation(test_words, marked_words):
     legalipy_syl = _legalipy(test_words)
     sonoripy_syl = _sonoripy(test_words)
     simple_syl   = _simple(test_words)
+    sba_syl      = _sba(test_words)
 
     pyphen_err   = set()
     liang_err    = set()
     legalipy_err = set()
     sonoripy_err = set()
     simple_err   = set()
+    sba_err      = set()
 
     for i in range(len(marked_words)):
         marked_syl = marked_words[i].count('-') + 1
@@ -577,8 +590,10 @@ def eval_hyphenation(test_words, marked_words):
             sonoripy_err.add(test_words[i])
         if marked_syl != simple_syl[i]:
             simple_err.add(test_words[i])
+        if marked_syl != sba_syl[i]:
+            sba_err.add(test_words[i])
 
-    return pyphen_err, liang_err, legalipy_err, sonoripy_err, simple_err
+    return pyphen_err, liang_err, legalipy_err, sonoripy_err, simple_err, sba_err
 
 if __name__ == '__main__':
     import os
@@ -594,7 +609,7 @@ if __name__ == '__main__':
             marked.append(line[1])
 
     # print(set([i.replace('-', '') for i in marked]) - set(test.keys()))
-    pyphen_err, liang_err, legalipy_err, sonoripy_err, simple_err = eval_hyphenation(list(test.keys()), marked)
+    pyphen_err, liang_err, legalipy_err, sonoripy_err, simple_err, sba_err = eval_hyphenation(list(test.keys()), marked)
 
     print('Hyphenation Results:')
     print('------------------------\n')
@@ -622,4 +637,9 @@ if __name__ == '__main__':
     print('-----------')
     print('Error: {}'.format(sum([float(test[i]) for i in simple_err.intersection(test.keys())])))
     print(simple_err)
+    print('\n')
+    print('SbA algorithm:')
+    print('-----------')
+    print('Error: {}'.format(sum([float(test[i]) for i in sba_err.intersection(test.keys())])))
+    print(sba_err)
     print('\n')
