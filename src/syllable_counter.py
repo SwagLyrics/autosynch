@@ -9,13 +9,15 @@ References:
 """
 
 import os
+import re
+from num2words import num2words
 from collections import Counter, deque
 from operator import itemgetter
 from config import cmudict_path, nettalk_path
 
-
 class SyllableCounter(object):
     def __init__(self, sba_lexicon_path=nettalk_path, cmudict_path=cmudict_path):
+        self.regex = re.compile("[^a-zA-Z\s']+")
         self._load_data(sba_lexicon_path, cmudict_path)
 
     def _load_data(self, sba_lexicon_path, cmudict_path):
@@ -57,7 +59,28 @@ class SyllableCounter(object):
             if word not in self.counter or self.counter[word] < count:
                 self.counter[word] = count
 
-    def _sba(self, input):
+    def _naive(self, input):
+        vowels = 'aeiouy'
+
+        n_vowels = 0
+        prev_vowel = False
+
+        for ch in input:
+            is_vowel = False
+            if ch in vowels:
+                if not prev_vowel:
+                    n_vowels += 1
+                is_vowel = True
+                prev_vowel = True
+
+            if not is_vowel:
+                prev_vowel = False
+        if input.endswith('es') or input.endswith('e'):
+            n_vowels -= 1
+
+        return n_vowels
+
+    def _sba(self, input, verbose=False):
         # Node data class
         class data(object):
             def __init__(self):
@@ -141,7 +164,8 @@ class SyllableCounter(object):
 
         dfs(('#', len(input)-1), '', [])
         if not paths:
-            print('UserWarning: No syllabification found')
+            if verbose:
+                print('UserWarning: No syllabification found')
             return None
 
         # Assign point values
@@ -164,12 +188,55 @@ class SyllableCounter(object):
             for t in ranking[-cand:]:
                 scores[t[0]] += points
 
-        shortest_path = max(scores.items(), key=itemgetter(1))[0][:-1]
+        shortest_path = max(scores.items(), key=itemgetter(1))[0]
         n_syllables = shortest_path.count('-') + 1
-        return n_syllables, shortest_path
 
-    def get_syllable_count(self, word):
+        return n_syllables
+
+    def _build_lyrics(self, lyrics):
+        formatted_lyrics = []
+        section = []
+
+        lines = lyrics.splitlines()
+        for line in lines:
+            if line.startswith('[') and line.endswith(']'):
+                if section:
+                    formatted_lyrics.append(section[:])
+                    section.clear()
+            elif line:
+                line = line.replace('-', ' ').replace('—', ' ').replace('/', ' ')
+                section.append([word for word in line.split()])
+        formatted_lyrics.append(section)
+
+        return formatted_lyrics
+
+    def get_syllable_count_word(self, word):
+        print(word)
+        try: # word is numerical
+            word = num2words(float(word)).replace('-', ' ')
+            return sum([self.get_syllable_count_word(word) for word in word.split()])
+        except ValueError:
+            word = self.regex.sub('', word).lower() # lowercase, no punctuation
+
         if word in self.counter:
             return self.counter[word]
-        else:
-            return self._sba(word)[0]
+
+        n_syllables = self._sba(word.replace("'", '')) # if not common contraction, remove apostrophe
+        if n_syllables is None:
+            n_syllables = self._naive(word)
+        self.counter[word] = n_syllables
+
+        return n_syllables
+
+    def get_syllable_count_lyrics(self, lyrics):
+        formatted_lyrics = self._build_lyrics(lyrics)
+
+        syl_lyrics = []
+        syl_section = []
+        for section in formatted_lyrics:
+            for line in section:
+                syl_section.append([self.get_syllable_count_word(word) for word in line])
+            syl_lyrics.append(syl_section[:])
+            syl_section.clear()
+
+        return syl_lyrics
