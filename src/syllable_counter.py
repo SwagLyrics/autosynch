@@ -11,7 +11,7 @@ References:
 import os
 import re
 from num2words import num2words
-from collections import Counter, deque
+from collections import OrderedDict, Counter, deque
 from operator import itemgetter
 from config import cmudict_path, nettalk_path
 
@@ -194,24 +194,21 @@ class SyllableCounter(object):
         return n_syllables
 
     def _build_lyrics(self, lyrics):
-        formatted_lyrics = []
-        section = []
+        formatted_lyrics = OrderedDict()
+        section = 'default'
 
         lines = lyrics.splitlines()
         for line in lines:
             if line.startswith('[') and line.endswith(']'):
-                if section:
-                    formatted_lyrics.append(section[:])
-                    section.clear()
+                section = line[1:-1]
+                formatted_lyrics[section] = []
             elif line:
                 line = line.replace('-', ' ').replace('—', ' ').replace('/', ' ')
-                section.append([word for word in line.split()])
-        formatted_lyrics.append(section)
+                formatted_lyrics[section].append([word for word in line.split()])
 
         return formatted_lyrics
 
     def get_syllable_count_word(self, word):
-        print(word)
         try: # word is numerical
             word = num2words(float(word)).replace('-', ' ')
             return sum([self.get_syllable_count_word(word) for word in word.split()])
@@ -231,12 +228,12 @@ class SyllableCounter(object):
     def get_syllable_count_lyrics(self, lyrics):
         formatted_lyrics = self._build_lyrics(lyrics)
 
-        syl_lyrics = []
+        syl_lyrics = OrderedDict()
         syl_section = []
-        for section in formatted_lyrics:
-            for line in section:
+        for section, lines in formatted_lyrics.items():
+            for line in lines:
                 syl_section.append([self.get_syllable_count_word(word) for word in line])
-            syl_lyrics.append(syl_section[:])
+            syl_lyrics[section] = syl_section[:]
             syl_section.clear()
 
         return syl_lyrics

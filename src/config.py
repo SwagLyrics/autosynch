@@ -6,3 +6,6 @@ resources_dir = os.path.join(parent_dir, 'resources')
 praat_script_path = os.path.join(resources_dir, 'praat-script.txt')
 cmudict_path = os.path.join(resources_dir, 'cmudict.0.7a.txt')
 nettalk_path = os.path.join(resources_dir, 'nettalk.data')
+
+spotify = { 'client_id': 'CLIENT_ID_HERE',
+            'client_secret': 'CLIENT_SECRET_HERE' }
