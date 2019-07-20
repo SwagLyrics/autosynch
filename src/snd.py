@@ -2,10 +2,10 @@ import os
 import logging
 from parselmouth import praat
 
-from config import praat_script_path, praat_script_defaults
+from config import praat_script_path
 
 class SND(object):
-    def __init__(self, **praat_script_defaults):
+    def __init__(self, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
         """
         Syllable nuclei detector. Loads PRAAT script.
 
@@ -44,3 +44,6 @@ class SND(object):
         output = praat.run(script, capture_output=True)[1].strip().split()
 
         return [float(time) for time in output[:-1]]
+
+snd = SND()
+snd.run('/Users/Chris/autosynch/resources/align_test.wav')
