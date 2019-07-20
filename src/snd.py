@@ -1,12 +1,11 @@
 import os
 import logging
-import soundfile
-import parselmouth
+from parselmouth import praat
 
-from config import praat_script_path
+from config import praat_script_path, praat_script_defaults
 
 class SND(object):
-    def __init__(self, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
+    def __init__(self, **praat_script_defaults):
         """
         Syllable nuclei detector. Loads PRAAT script.
 
@@ -28,8 +27,8 @@ class SND(object):
 
         :param file_path: Path to audio file to analyze.
         :type file_path: str
-        :return: Number of syllables
-        :rtype: int
+        :return: Timestamps of each syllable
+        :rtype: list[float]
         """
 
         # Check path existence
@@ -42,4 +41,6 @@ class SND(object):
                                     minpause=self.minpause,
                                     showtext=self.showtext,
                                     file_path=file_path)
-        return parselmouth.praat.run(script, capture_output=True)[1].strip()
+        output = praat.run(script, capture_output=True)[1].strip().split()
+
+        return [float(time) for time in output[:-1]]

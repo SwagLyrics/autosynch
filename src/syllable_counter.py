@@ -11,7 +11,7 @@ References:
 import os
 import re
 from num2words import num2words
-from collections import OrderedDict, Counter, deque
+from collections import Counter, deque
 from operator import itemgetter
 from config import cmudict_path, nettalk_path
 
@@ -194,17 +194,19 @@ class SyllableCounter(object):
         return n_syllables
 
     def _build_lyrics(self, lyrics):
-        formatted_lyrics = OrderedDict()
-        section = 'default'
+        formatted_lyrics = []
+        section = []
 
         lines = lyrics.splitlines()
         for line in lines:
             if line.startswith('[') and line.endswith(']'):
-                section = line[1:-1]
-                formatted_lyrics[section] = []
+                if section:
+                    formatted_lyrics.append(section[:])
+                    section.clear()
             elif line:
                 line = line.replace('-', ' ').replace('—', ' ').replace('/', ' ')
-                formatted_lyrics[section].append([word for word in line.split()])
+                section.append([word for word in line.split()])
+        formatted_lyrics.append(section)
 
         return formatted_lyrics
 
@@ -228,12 +230,12 @@ class SyllableCounter(object):
     def get_syllable_count_lyrics(self, lyrics):
         formatted_lyrics = self._build_lyrics(lyrics)
 
-        syl_lyrics = OrderedDict()
+        syl_lyrics = []
         syl_section = []
-        for section, lines in formatted_lyrics.items():
-            for line in lines:
+        for section in formatted_lyrics:
+            for line in section:
                 syl_section.append([self.get_syllable_count_word(word) for word in line])
-            syl_lyrics[section] = syl_section[:]
+            syl_lyrics.append(syl_section[:])
             syl_section.clear()
 
         return syl_lyrics

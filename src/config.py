@@ -7,5 +7,10 @@ praat_script_path = os.path.join(resources_dir, 'praat-script.txt')
 cmudict_path = os.path.join(resources_dir, 'cmudict.0.7a.txt')
 nettalk_path = os.path.join(resources_dir, 'nettalk.data')
 
-spotify = { 'client_id': 'CLIENT_ID_HERE',
-            'client_secret': 'CLIENT_SECRET_HERE' }
+praat_script_defaults = { 'silencedb': -25,
+                          'mindip': 2,
+                          'minpause': 0.3,
+                          'showtext': 2 }
+
+spotify_oauth = { 'client_id': 'CLIENT_ID',
+                  'client_secret': 'CLIENT_SECRET' }

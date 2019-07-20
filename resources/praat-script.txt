@@ -170,6 +170,7 @@ if showtext > 0
 
   for i from 1 to voicedcount
       position = voicedpeak'i' * timecorrection
+      printline 'position'
       Insert point... 1 position 'i'
   endfor
 endif
