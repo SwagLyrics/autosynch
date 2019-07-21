@@ -12,9 +12,12 @@ python:
 # install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install pytest pytest-cov mock
 
 # run tests
-script: pytest --cov-report term-missing --cov=autosynch tests/
+script:
+  - export PYTHONPATH=$PYTHONPATH:./
+  - pytest --cov-report term-missing --cov=autosynch tests/
 
 # only test phase2
 branches:
