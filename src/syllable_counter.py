@@ -13,20 +13,31 @@ import re
 from num2words import num2words
 from collections import Counter, deque
 from operator import itemgetter
-from config import cmudict_path, nettalk_path
+
+from autosynch.config import cmudict_path, nettalk_path
 
 class SyllableCounter(object):
     def __init__(self, sba_lexicon_path=nettalk_path, cmudict_path=cmudict_path):
         self.regex = re.compile("[^a-zA-Z\s']+")
-        self._load_data(sba_lexicon_path, cmudict_path)
+        self.lexicon, self.counter = self._load_data(sba_lexicon_path, cmudict_path)
 
     def _load_data(self, sba_lexicon_path, cmudict_path):
-        self.lexicon = []
-        self.counter = {}
+        lexicon = []
+        counter = {}
 
-        with open(sba_lexicon_path, 'r') as f, open(cmudict_path, 'r') as g:
-            sba_lexicon = f.read().splitlines()
-            cmudict = g.read().splitlines()
+        try:
+            with open(sba_lexicon_path, 'r') as f:
+                sba_lexicon = f.read().splitlines()
+        except Exception as e:
+            print(e)
+            return None, None
+
+        try:
+            with open(cmudict_path, 'r') as f:
+                cmudict = f.read().splitlines()
+        except Exception as e:
+            print('Unable to read CMUdict')
+            cmudict = []
 
         for line in sba_lexicon:
             if not line or line.startswith('#'):
@@ -44,8 +55,8 @@ class SyllableCounter(object):
                 else:
                     hyphenated_word += ch + '*'
 
-            self.lexicon.append('#{}#'.format(hyphenated_word[:-1]))
-            self.counter[word] = count + 1
+            lexicon.append('#{}#'.format(hyphenated_word[:-1]))
+            counter[word] = count + 1
 
         for line in cmudict:
             if not line or line.startswith(';;;'):
@@ -56,8 +67,10 @@ class SyllableCounter(object):
             if word.endswith(')'):
                 continue
 
-            if word not in self.counter or self.counter[word] < count:
-                self.counter[word] = count
+            if word not in counter or counter[word] < count:
+                counter[word] = count
+
+        return lexicon, counter
 
     def _naive(self, input):
         vowels = 'aeiouy'

@@ -3,9 +3,9 @@ import sys
 import warnings
 import logging
 
-from snd import SND
-from config import resources_dir
-from mad_twinnet.scripts import twinnet
+from autosynch.snd import SND
+from autosynch.config import resources_dir
+from autosynch.mad_twinnet.scripts import twinnet
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',

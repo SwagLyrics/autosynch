@@ -4,10 +4,10 @@ from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from swaglyrics.cli import get_lyrics
 
-from snd import SND
-from syllable_counter import SyllableCounter
-from mad_twinnet.scripts import twinnet
-from config import resources_dir, spotify_oauth
+from autosynch.snd import SND
+from autosynch.syllable_counter import SyllableCounter
+from autosynch.mad_twinnet.scripts import twinnet
+from autosynch.config import resources_dir, spotify_oauth
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
@@ -72,8 +72,6 @@ if do_twinnet:
     logging.info('TwinNet completed\n')
 
 for song in songs:
-    print('{} by {}\nGenre: {}\n-------------------'.format(song['song'], song['artist'], song['genre']))
-
     # Get file names
     out_path = os.path.join(resources_dir, 'align_tests/' + song['track_id'] + '_voice.wav')
 
@@ -93,14 +91,12 @@ for song in songs:
     # Get SND syllables, density per section
     snd_per_section = []
     i_syl = 0
-    for section in track_sections:
+    for i, section in enumerate(track_sections):
         count = 0
         endpoint = section['start'] + section['duration']
         while i_syl < len(snd_syllables) and snd_syllables[i_syl] < endpoint:
             count += 1
             i_syl += 1
-        snd_per_section.append((count, count/section['duration']))
+        snd_per_section.append((i, count, count/section['duration']))
 
-    print(sc_per_section)
-    print(snd_per_section)
-    print('\n')
+    # Remove instrumental sections

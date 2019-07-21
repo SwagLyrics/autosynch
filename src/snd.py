@@ -2,7 +2,7 @@ import os
 import logging
 from parselmouth import praat
 
-from config import praat_script_path
+from autosynch.config import praat_script_path
 
 class SND(object):
     def __init__(self, silencedb=-25, mindip=2, minpause=0.3, showtext=2):
