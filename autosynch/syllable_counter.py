@@ -1,5 +1,7 @@
 """
 References:
+- T. J. Sejnowski and C. R. Rosenberg. "Parallel networks that learn to
+  pronounce English text." Complex Systems 1(1), 1987, pp. 145–168.
 - J. Dedina and H. C. Nusbaum. "PRONOUNCE: a program for pronunciation by
   analogy." Comput. Speech Lang. 5(1), 1991, pp. 55-64.
 - Y. Marchand and R. I. Damper. "A multistrategy approach to improving
@@ -17,11 +19,39 @@ from operator import itemgetter
 from autosynch.config import cmudict_path, nettalk_path
 
 class SyllableCounter(object):
+    """ Helper class for counting number of syllables in lyrics.
+    """
+
     def __init__(self, sba_lexicon_path=nettalk_path, cmudict_path=cmudict_path):
+        # Regex for alphabetical characters, apostrophes, and whitespaces
         self.regex = re.compile("[^a-zA-Z\s']+")
+
+        # Load lexicon, dictionary
         self.lexicon, self.counter = self._load_data(sba_lexicon_path, cmudict_path)
 
     def _load_data(self, sba_lexicon_path, cmudict_path):
+        """
+        Loads data for SbA lexicon and for counting dictionary.
+
+        Lexicon file should follow format of NetTalk dataset, with '#' denoting
+        comment lines and data lines following the format:
+
+            [word] [any_text] [stress_pattern]
+
+        with stress_pattern as specified in Sejnowski & Rosenberg (1987). CMU
+        dict file should have comment lines begin with ';;;'.
+
+        Returns None, None if SbA lexicon cannot be opened.
+
+        :param sba_lexicon_path: Path to SbA lexicon file.
+        :type sba_lexicon_path: file-like
+        :param cmudict_path: Path to CMU dict file.
+        :type cmudict_path: file-like
+        :return lexicon, counter: List of hyphenated words for SbA processing\
+                and dictionary with values denoting number of syllables in key.
+        :rtype: list[str], dict{str: int}
+        """
+
         lexicon = []
         counter = {}
 
@@ -73,6 +103,16 @@ class SyllableCounter(object):
         return lexicon, counter
 
     def _naive(self, input):
+        """
+        Naive algorithm for counting syllables in a word based on simplified
+        foundational syllabification rules.
+
+        :param input: Word to count syllables.
+        :type input: str
+        :return n_vowels: Number of syllables.
+        :rtype: int
+        """
+
         vowels = 'aeiouy'
 
         n_vowels = 0
@@ -80,20 +120,39 @@ class SyllableCounter(object):
 
         for ch in input:
             is_vowel = False
+
+            # Vowel counts as syllable
             if ch in vowels:
+                # Check for diphthong
                 if not prev_vowel:
                     n_vowels += 1
                 is_vowel = True
                 prev_vowel = True
-
             if not is_vowel:
                 prev_vowel = False
+
+        # Remove silent vowels
         if input.endswith('es') or input.endswith('e'):
             n_vowels -= 1
 
         return n_vowels
 
     def _sba(self, input, verbose=False):
+        """
+        Implementation of Marchand & Damper's syllabification by analogy
+        algorithm (2006). Requires lexicon to be loaded prior to calling.
+
+        Y. Marchand and R. I. Damper. "Can syllabification improve pronunciation
+        by analogy of English?" Nat. Lang. Eng. 13(1), 2006, pp. 1-24.
+
+        :param input: Word to count syllables.
+        :type input: str
+        :param verbose: Flag for printing syllabification failure warnings.
+        :type verbose: bool
+        :return n_syllables: Number of syllables.
+        :rtype: int
+        """
+
         # Node data class
         class data(object):
             def __init__(self):
@@ -148,7 +207,6 @@ class SyllableCounter(object):
                     lattice[adjacent].sinputs.append(in_arc)
                 elif lattice[node].distance + 1 == lattice[adjacent].distance:
                     lattice[adjacent].sinputs.append(in_arc)
-        queue.clear()
 
         # Decision function 2: score by strategy
         # PF = product, SDPS = standard deviation, WL = weak link
@@ -181,7 +239,7 @@ class SyllableCounter(object):
                 print('UserWarning: No syllabification found')
             return None
 
-        # Assign point values
+        # Assign rankings and points
         scores = {path[0]: 0 for path in paths}
         for s in range(1, 4):
             ranking = sorted(paths, key=itemgetter(s), reverse=True)
@@ -201,31 +259,65 @@ class SyllableCounter(object):
             for t in ranking[-cand:]:
                 scores[t[0]] += points
 
+        # Get shortest path by points
         shortest_path = max(scores.items(), key=itemgetter(1))[0]
         n_syllables = shortest_path.count('-') + 1
 
         return n_syllables
 
     def _build_lyrics(self, lyrics):
+        """
+        Constructs segmented lyrics structure by song section, line, and word.
+
+        Returns of list of lists representing sections, each of which is a list
+        of lists representing lines of lyrics, each of which is a list of words
+        in that line.
+
+        :param lyrics: Lyrics in format of Genius.com.
+        :type lyrics: str
+        :return formatted_lyrics: Lyrics in segmented format.
+        :rtype: list[list[list[str]]]
+        """
+
         formatted_lyrics = []
         section = []
 
         lines = lyrics.splitlines()
         for line in lines:
+            # Check for section header
             if line.startswith('[') and line.endswith(']'):
+                # Ignore info about producer
                 if 'Produced' in line:
                     continue
                 if section:
+                    # Append section to lyrics
                     formatted_lyrics.append(section[:])
                     section.clear()
             elif line:
+                # Convert -, —, and / compounds into two words
                 line = line.replace('-', ' ').replace('—', ' ').replace('/', ' ')
+
+                # Append line to section
                 section.append([word for word in line.split()])
         formatted_lyrics.append(section)
 
         return formatted_lyrics
 
     def get_syllable_count_word(self, word):
+        """
+        Formats and retrieves syllable count for individual words, including
+        numerals.
+
+        Words are first checked for in `self.counter`. If not found, SbA is
+        performed, and if no syllabification exists, then the naive algorithm is
+        performed. The resulting syllable count is then added to `self.counter`.
+
+        :param word: Word to count syllables.
+        :type word: str | float
+        :return n_syllables: Number of syllables.
+        :rtype: int
+        """
+
         try: # word is numerical
             word = num2words(float(word)).replace('-', ' ')
             return sum([self.get_syllable_count_word(word) for word in word.split()])
@@ -243,6 +335,23 @@ class SyllableCounter(object):
         return n_syllables
 
     def get_syllable_count_lyrics(self, lyrics):
+        """
+        Formats and retrieves syllable counts for each word in lyrics.
+
+        Returns of list of lists representing sections, each of which is a list
+        of lists representing lines of lyrics, each of which is a list of
+        counts of syllables per word in that line.
+
+        Section headers should be denoted by [ brackets ]. If no section headers
+        exist, all lyrics are set into 1 section. Section headers that contain
+        producer information, i.e. [Produced by ...], are ignored.
+
+        :param lyrics: Lyrics in format of Genius.com.
+        :type lyrics: str
+        :return syl_lyrics: Word counts in segmented format.
+        :rtype: list[list[list[int]]]
+        """
+        
         formatted_lyrics = self._build_lyrics(lyrics)
 
         syl_lyrics = []

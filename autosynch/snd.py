@@ -9,7 +9,14 @@ class SND(object):
         """
         Syllable nuclei detector. Loads PRAAT script.
 
-        :params: see praat-script.txt for keyword args description
+        :param silencedb: Threshold for maximum decibel to count as silence.
+        :type silencedb: float
+        :param mindip: Minimum dip in decibels to classify peak.
+        :type mindip: float
+        :param minpause: Minimum pause seconds to count as different syllable.
+        :type minpause: float
+        :param showtext: Flag to show text or not.
+        :type showtext: int
         """
 
         self.silencedb = silencedb
@@ -23,11 +30,11 @@ class SND(object):
 
     def run(self, file_path):
         """
-        Runs PRAAT script.
+        Runs Praat script.
 
         :param file_path: Path to audio file to analyze.
-        :type file_path: str
-        :return: Timestamps of each syllable
+        :type file_path: file-like
+        :return: Timestamps of each syllable.
         :rtype: list[float]
         """
 
