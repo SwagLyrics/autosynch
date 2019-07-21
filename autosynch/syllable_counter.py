@@ -24,7 +24,7 @@ class SyllableCounter(object):
 
     def __init__(self, sba_lexicon_path=nettalk_path, cmudict_path=cmudict_path):
         # Regex for alphabetical characters, apostrophes, and whitespaces
-        self.regex = re.compile("[^a-zA-Z\s']+")
+        self.regex = re.compile(r"[^a-zA-Z\s']+")
 
         # Load lexicon, dictionary
         self.lexicon, self.counter = self._load_data(sba_lexicon_path, cmudict_path)
@@ -351,7 +351,7 @@ class SyllableCounter(object):
         :return syl_lyrics: Word counts in segmented format.
         :rtype: list[list[list[int]]]
         """
-        
+
         formatted_lyrics = self._build_lyrics(lyrics)
 
         syl_lyrics = []

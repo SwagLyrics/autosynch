@@ -1,0 +1,22 @@
+dist: xenial # for Python versions >= 3.7
+language: python
+
+# Python versions
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - nightly
+
+# install dependencies
+install:
+  - pip install -r requirements.txt
+
+# run tests
+script: pytest --cov-report term-missing --cov=autosynch tests/
+
+# only test phase2
+branches:
+  only:
+    - phase2
