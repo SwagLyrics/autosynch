@@ -44,6 +44,3 @@ class SND(object):
         output = praat.run(script, capture_output=True)[1].strip().split()
 
         return [float(time) for time in output[:-1]]
-
-snd = SND()
-snd.run('/Users/Chris/autosynch/resources/align_test.wav')

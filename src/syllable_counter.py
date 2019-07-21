@@ -200,6 +200,8 @@ class SyllableCounter(object):
         lines = lyrics.splitlines()
         for line in lines:
             if line.startswith('[') and line.endswith(']'):
+                if 'Produced' in line:
+                    continue
                 if section:
                     formatted_lyrics.append(section[:])
                     section.clear()
