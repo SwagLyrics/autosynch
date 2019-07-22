@@ -41,34 +41,29 @@ def _make_target_file_names(sources_list):
     return targets_list
 
 
-def _get_file_names_from_file(file_name):
-    """Reads line by line a txt file and returns the contents.
-
-    :param file_name: The file name of the txt file.
-    :type file_name: str
-    :return: The contents of the file, in a line-by-line fashion.
-    :rtype: list[str]
-    """
-    with open(file_name) as f:
-        return [line.strip() for line in f.readlines()]
-
-
 def twinnet_process(sources_list, output_file_names=None, get_background=False):
     """Applies MaD TwinNet to audio files.
 
     :param sources_list: Files to be processed.\
            Each must be .wav with 44.1kHz sample rate, recommended bit width of
            16 (8, 24, 32 acceptable).
-    :type sources_list: list[str]
+    :type sources_list: str | list[str]
     :param output_file_names: The output file names to be used.\
            If None, outputs names are automatically generated.
     :type output_file_names: list[list[str]] | None
+    :return: Whether or not TwinNet was successful
+    :rtype: bool
     """
 
     logging.info('Initializing MaD TwinNet...')
 
+    if isinstance(sources_list, str):
+        sources_list = [sources_list]
     if output_file_names is None:
         output_file_names = _make_target_file_names(sources_list)
+    if len(sources_list) != len(output_file_names):
+        logging.error('Number of sources and number of outputs do not match')
+        return False
 
     device = 'cuda' if not debug and torch.cuda.is_available() else 'cpu'
     logging.info('Device set as %s', device)
@@ -85,18 +80,20 @@ def twinnet_process(sources_list, output_file_names=None, get_background=False):
 
         mad.load_state_dict(torch.load(output_states_path['mad']))
         mad = mad.to(device).eval()
-
-        testing_it = data_feeder_testing(
-            window_size=hyper_parameters['window_size'], fft_size=hyper_parameters['fft_size'],
-            hop_size=hyper_parameters['hop_size'], seq_length=hyper_parameters['seq_length'],
-            context_length=hyper_parameters['context_length'], batch_size=1,
-            debug=debug, sources_list=sources_list
-        )
-
-        logging.info('Training weights initialized')
     except Exception as e:
-        logging.error('Exception occurred getting data iterator', exc_info=True)
-        sys.exit()
+        logging.error('Exception occurred initializing training weights', exc_info=True)
+        return False
+    logging.info('Training weights initialized')
+
+    # Data iterator
+    logging.info('Initializing data iterator...')
+    testing_it = data_feeder_testing(
+        window_size=hyper_parameters['window_size'], fft_size=hyper_parameters['fft_size'],
+        hop_size=hyper_parameters['hop_size'], seq_length=hyper_parameters['seq_length'],
+        context_length=hyper_parameters['context_length'], batch_size=1,
+        debug=debug, sources_list=sources_list
+    )
+    logging.info('Data iterator initialized')
 
     logging.info('Beginning vocal isolation...')
     total_time = 0
@@ -147,5 +144,7 @@ def twinnet_process(sources_list, output_file_names=None, get_background=False):
 
     logging.info(usage_output_string_total.format(t=total_time))
     logging.info('MaD TwinNet completed')
+
+    return True
 
 # EOF

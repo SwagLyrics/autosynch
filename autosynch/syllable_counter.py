@@ -137,7 +137,7 @@ class SyllableCounter(object):
 
         return n_vowels
 
-    def _sba(self, input, verbose=False):
+    def _sba(self, input):
         """
         Implementation of Marchand & Damper's syllabification by analogy
         algorithm (2006). Requires lexicon to be loaded prior to calling.
@@ -235,8 +235,6 @@ class SyllableCounter(object):
 
         dfs(('#', len(input)-1), '', [])
         if not paths:
-            if verbose:
-                print('UserWarning: No syllabification found')
             return None
 
         # Assign rankings and points

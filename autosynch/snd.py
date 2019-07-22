@@ -30,18 +30,21 @@ class SND(object):
 
     def run(self, file_path):
         """
-        Runs Praat script.
+        Runs Praat script. Returns None if file not found or file is not wav.
 
         :param file_path: Path to audio file to analyze.
         :type file_path: file-like
         :return: Timestamps of each syllable.
-        :rtype: list[float]
+        :rtype: list[float] | None
         """
 
-        # Check path existence
+        # Check path validity
         if not os.path.exists(file_path):
-            logging.error('%s does not exist', file_path)
-            raise FileNotFoundError('File does not exist')
+            logging.error('{} does not exist'.format(file_path))
+            return None
+        if not os.path.splitext(file_path)[1] == '.wav':
+            logging.error('{} is not a wav file'.format(file_path))
+            return None
 
         script = self.script.format(silencedb=self.silencedb,
                                     mindip=self.mindip,

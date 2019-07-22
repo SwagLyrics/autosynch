@@ -161,7 +161,7 @@ def _wav_to_array(nb_channels, sample_width, data):
     else:
         # 8 bit samples are stored as unsigned ints; others as signed ints.
         dt_char = 'u' if sample_width == 1 else 'i'
-        a = np.fromstring(data, dtype='<%s%d' % (dt_char, sample_width))
+        a = np.frombuffer(data, dtype='<%s%d' % (dt_char, sample_width))
         result = a.reshape(-1, nb_channels)
 
     return result

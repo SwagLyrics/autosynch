@@ -3,11 +3,13 @@ language: python
 
 # Python versions
 python:
-  - "3.4"
   - "3.5"
   - "3.6"
   - "3.7"
-  - nightly
+
+# git settings
+git:
+  depth: 10
 
 # install dependencies
 install:
@@ -17,7 +19,7 @@ install:
 # run tests
 script:
   - export PYTHONPATH=$PYTHONPATH:./
-  - pytest --cov-report term-missing --cov=autosynch tests/
+  - pytest --cov-config=.coveragerc --cov=autosynch tests/
 
 # only test phase2
 branches:

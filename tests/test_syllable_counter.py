@@ -2,7 +2,7 @@ import pytest
 from mock import mock, patch
 from autosynch.syllable_counter import SyllableCounter
 
-@pytest.fixture
+@pytest.fixture()
 def counter():
     return SyllableCounter()
 
@@ -16,13 +16,22 @@ def test_handles_no_lexicon_data():
     assert sc.lexicon is None
     assert sc.counter is None
 
+def test_handles_no_cmudict_path():
+    sc = SyllableCounter(cmudict_path=None)
+
+def test_naive(counter):
+    assert counter._naive('ulotrichous') == 4
+    assert counter._naive('borborygmus') == 4
+    assert counter._naive('irritates') == 3
+    assert counter._naive('qulliq') == 2
+
 def test_sba(counter):
     assert counter._sba('quagmire') == 2
     assert counter._sba('subpoena') == 3
     assert counter._sba('cooperate') == 4
-    assert counter._sba('brulée') is None
     assert counter._sba('footstool') == 2
     assert counter._sba('borscht') == 1
+    assert counter._sba('qulliq') is None
 
 def test_build_lyrics(counter):
     assert counter._build_lyrics('hello\nits me') == [[['hello'], ['its', 'me']]]
@@ -35,11 +44,11 @@ def test_build_lyrics(counter):
 
 def test_get_syllable_count_word(counter):
     assert counter.get_syllable_count_word('42') == 3
-    assert counter.get_syllable_count_word('4200') == 6
     assert counter.get_syllable_count_word('3.14') == 4
     assert counter.get_syllable_count_word('HELLO') == 2
     assert counter.get_syllable_count_word('don\'t~!@#$%^&*()-=_+`|}{":<>?.,/;"}') == 1
     assert counter.get_syllable_count_word('samantha\'s') == 3
+    assert counter.get_syllable_count_word('qulliq') == 2
 
 def test_get_syllable_count_lyrics(counter):
     assert counter.get_syllable_count_lyrics('hElLO\nit\'s M####e') == [[[2], [1, 1]]]
