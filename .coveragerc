@@ -10,8 +10,5 @@ include =
     autosynch/*
 omit =
     autosynch/mad_twinnet/dataset/*
-    autosynch/mad_twinnet/helpers/*
-    autosynch/mad_twinnet/modules/*
-    autosynch/mad_twinnet/objectives/*
     autosynch/mad_twinnet/outputs/*
     autosynch/eval.py
