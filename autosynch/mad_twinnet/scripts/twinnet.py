@@ -67,33 +67,26 @@ def twinnet_process(sources_list, output_file_names=None, get_background=False):
 
     device = 'cuda' if not debug and torch.cuda.is_available() else 'cpu'
     logging.info('Device set as %s', device)
-    logging.info('MaD TwinNet successfully initialized')
 
     # Masker modules
-    logging.info('Initializing training weights...')
-    try:
-        mad = MaD(
-            rnn_enc_input_dim=hyper_parameters['reduced_dim'],
-            rnn_dec_input_dim=hyper_parameters['rnn_enc_output_dim'],
-            original_input_dim=hyper_parameters['original_input_dim'],
-            context_length=hyper_parameters['context_length'])
+    mad = MaD(
+        rnn_enc_input_dim=hyper_parameters['reduced_dim'],
+        rnn_dec_input_dim=hyper_parameters['rnn_enc_output_dim'],
+        original_input_dim=hyper_parameters['original_input_dim'],
+        context_length=hyper_parameters['context_length'])
 
-        mad.load_state_dict(torch.load(output_states_path['mad']))
-        mad = mad.to(device).eval()
-    except Exception as e:
-        logging.error('Exception occurred initializing training weights', exc_info=True)
-        return False
-    logging.info('Training weights initialized')
+    mad.load_state_dict(torch.load(output_states_path['mad']))
+    mad = mad.to(device).eval()
 
     # Data iterator
-    logging.info('Initializing data iterator...')
     testing_it = data_feeder_testing(
         window_size=hyper_parameters['window_size'], fft_size=hyper_parameters['fft_size'],
         hop_size=hyper_parameters['hop_size'], seq_length=hyper_parameters['seq_length'],
         context_length=hyper_parameters['context_length'], batch_size=1,
         debug=debug, sources_list=sources_list
     )
-    logging.info('Data iterator initialized')
+
+    logging.info('MaD TwinNet successfully initialized')
 
     logging.info('Beginning vocal isolation...')
     total_time = 0

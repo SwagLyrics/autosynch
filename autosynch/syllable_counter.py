@@ -55,6 +55,7 @@ class SyllableCounter(object):
         lexicon = []
         counter = {}
 
+        # Check lexicon file
         try:
             with open(sba_lexicon_path, 'r') as f:
                 sba_lexicon = f.read().splitlines()
@@ -62,6 +63,7 @@ class SyllableCounter(object):
             print(e)
             return None, None
 
+        # Check CMUdict file
         try:
             with open(cmudict_path, 'r') as f:
                 cmudict = f.read().splitlines()
@@ -69,6 +71,7 @@ class SyllableCounter(object):
             print('Unable to read CMUdict')
             cmudict = []
 
+        # Format and load lexicon data
         for line in sba_lexicon:
             if not line or line.startswith('#'):
                 continue
@@ -88,6 +91,7 @@ class SyllableCounter(object):
             lexicon.append('#{}#'.format(hyphenated_word[:-1]))
             counter[word] = count + 1
 
+        # Format and save CMUdict data
         for line in cmudict:
             if not line or line.startswith(';;;'):
                 continue
@@ -267,37 +271,49 @@ class SyllableCounter(object):
         """
         Constructs segmented lyrics structure by song section, line, and word.
 
-        Returns of list of lists representing sections, each of which is a list
-        of lists representing lines of lyrics, each of which is a list of words
-        in that line.
+        Returns of list of tuples representing sections, each of which contains
+        a list of lists representing lines of lyrics, each of which is a list of
+        words in that line. The first element of the tuple is the section's
+        category (i.e., chorus, verse, etc.). The second element is the section
+        lyrics themselves.
 
         :param lyrics: Lyrics in format of Genius.com.
         :type lyrics: str
         :return formatted_lyrics: Lyrics in segmented format.
-        :rtype: list[list[list[str]]]
+        :rtype: list[tuple(str, list[list[str]])]
         """
 
         formatted_lyrics = []
         section = []
+        section_type = 'default'
 
         lines = lyrics.splitlines()
         for line in lines:
             # Check for section header
             if line.startswith('[') and line.endswith(']'):
-                # Ignore info about producer
-                if 'Produced' in line:
-                    continue
+                # Append section to lyrics
                 if section:
-                    # Append section to lyrics
-                    formatted_lyrics.append(section[:])
+                    formatted_lyrics.append((section_type, section[:]))
                     section.clear()
+
+                # Get next section type
+                if 'Chorus' in line:
+                    section_type = 'chorus'
+                elif 'Verse' in line:
+                    section_type = 'verse'
+                elif 'Produced' in line or 'Instrumental' in line:
+                    continue
+                elif 'Bridge' in line or 'Hook' in line:
+                    section_type = 'bridge'
+                else:
+                    section_type = 'intro'
             elif line:
                 # Convert -, —, and / compounds into two words
                 line = line.replace('-', ' ').replace('—', ' ').replace('/', ' ')
 
                 # Append line to section
                 section.append([word for word in line.split()])
-        formatted_lyrics.append(section)
+        formatted_lyrics.append((section_type, section))
 
         return formatted_lyrics
 
@@ -316,18 +332,26 @@ class SyllableCounter(object):
         :rtype: int
         """
 
-        try: # word is numerical
+        # Check if word is numerical
+        try:
             word = num2words(float(word)).replace('-', ' ')
             return sum([self.get_syllable_count_word(word) for word in word.split()])
         except ValueError:
-            word = self.regex.sub('', word).lower() # lowercase, no punctuation
+            # Else, format word
+            word = self.regex.sub('', word).lower()
 
+        # Check if word has already been processed
         if word in self.counter:
             return self.counter[word]
 
-        n_syllables = self._sba(word.replace("'", '')) # if not common contraction, remove apostrophe
+        # Remove apostrophes, do SbA
+        n_syllables = self._sba(word.replace("'", ''))
+
+        # If SbA fails, do naive
         if n_syllables is None:
             n_syllables = self._naive(word)
+
+        # Add word to already processed words
         self.counter[word] = n_syllables
 
         return n_syllables
@@ -336,18 +360,15 @@ class SyllableCounter(object):
         """
         Formats and retrieves syllable counts for each word in lyrics.
 
-        Returns of list of lists representing sections, each of which is a list
-        of lists representing lines of lyrics, each of which is a list of
-        counts of syllables per word in that line.
-
-        Section headers should be denoted by [ brackets ]. If no section headers
-        exist, all lyrics are set into 1 section. Section headers that contain
-        producer information, i.e. [Produced by ...], are ignored.
+        Returns of list of tuples representing sections, each of which contains
+        a list of lists representing lines of lyrics, each of which is a list of
+        syllable counts of words in that line. See _build_lyrics() for more
+        information.
 
         :param lyrics: Lyrics in format of Genius.com.
         :type lyrics: str
-        :return syl_lyrics: Word counts in segmented format.
-        :rtype: list[list[list[int]]]
+        :return syl_lyrics: Syllable counts for words in segmented format.
+        :rtype: list[tuple(str, list[list[int]])]
         """
 
         formatted_lyrics = self._build_lyrics(lyrics)
@@ -355,9 +376,25 @@ class SyllableCounter(object):
         syl_lyrics = []
         syl_section = []
         for section in formatted_lyrics:
-            for line in section:
+            for line in section[1]:
                 syl_section.append([self.get_syllable_count_word(word) for word in line])
-            syl_lyrics.append(syl_section[:])
+            syl_lyrics.append((section[0], syl_section[:]))
             syl_section.clear()
 
         return syl_lyrics
+
+    def get_syllable_count_per_section(self, lyrics):
+        """
+        Formats and retrieves syllable counts per section in lyrics.
+
+        Sums syllable counts from each section in return value of
+        get_syllable_count_lyrics().
+
+        :param lyrics: Lyrics in format of Genius.com.
+        :type lyrics: str
+        :return: Syllable counts for each section in segmented format.
+        :rtype: list[tuple(str, int)]
+        """
+
+        syl_lyrics = self.get_syllable_count_lyrics(lyrics)
+        return [(section[0], sum(sum(line) for line in section[1])) for section in syl_lyrics]
