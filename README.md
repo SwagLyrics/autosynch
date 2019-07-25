@@ -1,6 +1,6 @@
 # autosynch repository
 
-[![Build Status](https://travis-ci.com/chriswang030/autosynch.svg?branch=phase2)](https://travis-ci.com/chriswang030/autosynch)
+[![Build Status](https://travis-ci.com/chriswang030/autosynch.svg?branch=phase2)](https://travis-ci.com/chriswang030/autosynch) [![codecov](https://codecov.io/gh/chriswang030/autosynch/branch/phase2/graph/badge.svg)](https://codecov.io/gh/chriswang030/autosynch)
 
 WORK IN PROGRESS
 
