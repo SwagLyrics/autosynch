@@ -13,10 +13,6 @@ def audio_file():
 def test_handles_input_length_mismatch():
     assert twinnet.twinnet_process(['1', '2'], ['1']) is False
 
-@patch.object(MaD, 'load_state_dict', side_effect=RuntimeError())
-def test_handles_training_weight_initialization_failure(audio_file):
-    assert twinnet.twinnet_process(audio_file) is False
-
 def test_generate_output_path(audio_file):
     assert twinnet._make_target_file_names(['1&*!!.wav']) == [['1&*!!_voice.wav', '1&*!!_bg_music.wav']]
     assert twinnet._make_target_file_names(['1', '2']) == [['1_voice.wav', '1_bg_music.wav'], ['2_voice.wav', '2_bg_music.wav']]

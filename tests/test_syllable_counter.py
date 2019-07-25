@@ -34,13 +34,11 @@ def test_sba(counter):
     assert counter._sba('qulliq') is None
 
 def test_build_lyrics(counter):
-    assert counter._build_lyrics('hello\nits me') == [[['hello'], ['its', 'me']]]
-    assert counter._build_lyrics('[Chorus]\nhello\nits me') == [[['hello'], ['its', 'me']]]
-    assert counter._build_lyrics('[Chorus]\nhello\n[Verse]\nits me') == [[['hello']], [['its', 'me']]]
-    assert counter._build_lyrics('[Produced by X]\n[Chorus]\nhello\nits me') == [[['hello'], ['its', 'me']]]
-    assert counter._build_lyrics('hello\nhy-phen') == [[['hello'], ['hy', 'phen']]]
-    assert counter._build_lyrics('hello\nen-dash') == [[['hello'], ['en', 'dash']]]
-    assert counter._build_lyrics('hello\nforward/slash') == [[['hello'], ['forward', 'slash']]]
+    assert counter._build_lyrics('hello\nen-dash') == [('default', [['hello'], ['en', 'dash']])]
+    assert counter._build_lyrics('[Chorus]\nhello\nhy-phen') == [('chorus', [['hello'], ['hy', 'phen']])]
+    assert counter._build_lyrics('[Produced by X]\n[Chorus]\nhello\nsla/sh') == [('chorus', [['hello'], ['sla', 'sh']])]
+    assert counter._build_lyrics('[Chorus]\nhello\n[Verse]\nits me') == [('chorus', [['hello']]), ('verse', [['its', 'me']])]
+    assert counter._build_lyrics('[Bridge]\nhello\n[Intro]\nits me') == [('bridge', [['hello']]), ('intro', [['its', 'me']])]
 
 def test_get_syllable_count_word(counter):
     assert counter.get_syllable_count_word('42') == 3
@@ -51,4 +49,7 @@ def test_get_syllable_count_word(counter):
     assert counter.get_syllable_count_word('qulliq') == 2
 
 def test_get_syllable_count_lyrics(counter):
-    assert counter.get_syllable_count_lyrics('hElLO\nit\'s M####e') == [[[2], [1, 1]]]
+    assert counter.get_syllable_count_lyrics('hElLO\nit\'s M####e') == [('default', [[2], [1, 1]])]
+
+def test_get_syllable_count_per_section(counter):
+    assert counter.get_syllable_count_per_section('[Chorus]\nhello\n[Verse]\nits me') == [('chorus', 2), ('verse', 2)]
