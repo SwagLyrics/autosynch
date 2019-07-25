@@ -2,17 +2,27 @@
 
 [![Build Status](https://travis-ci.com/chriswang030/autosynch.svg?branch=phase2)](https://travis-ci.com/chriswang030/autosynch) [![codecov](https://codecov.io/gh/chriswang030/autosynch/branch/phase2/graph/badge.svg)](https://codecov.io/gh/chriswang030/autosynch)
 
-WORK IN PROGRESS
+## installation
+To install, do the following:
+- `git clone` this branch (use `-b master --single-branch` to clone just this branch)
+- `cd autosynch`
+- `pip install -r requirements.txt`
 
-This branch will contain additional work done in phase 2 of GSoC, including:
-- hyphenation/syllable counting algorithms
-- improvements to vocal isolation
-- syllable alignment of music and lyrics
-- initial testing for real-time processing
+## usage
+To use, you must put a trained model into the `src/mad_twinnet/outputs/states`
+directory. To download our weights trained on MedleyDB_V2 and run automatically,
+simply execute:
+- `./setup.sh` from the outer `autosynch` directory
 
-Get weights trained on MedleyDB_V1 here: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3334973.svg)](https://doi.org/10.5281/zenodo.3334973)
+If permission is denied, execute:
+- `chmod a+rx setup.sh`
+- `./setup.sh`
 
-Get weights trained on MedleyDB_V2 here: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3351632.svg)](https://doi.org/10.5281/zenodo.3351632)
+If you would like to download the weights manually or get a different version,
+check here:
+- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3334973.svg)](https://doi.org/10.5281/zenodo.3334973) for weights trained on MedleyDB V1
+- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3351632.svg)](https://doi.org/10.5281/zenodo.3351632) for weights trained on MedleyDB V2
 
-To automatically download the V2 weights to the right location, execute from the outer `autosynch` directory:
-`curl 'https://zenodo.org/record/3351632/files/mad.pt?download=1' > autosynch/mad_twinnet/outputs/states/mad.pt`
+Currently, `align.py` gives an example run on The Avett Brothers' "Head Full of
+Doubt/Road Full of Promise." A more detailed report on the output, as well as an
+improved UI regarding alignment, will come later.
