@@ -3,7 +3,6 @@ import logging
 import time
 import msaf
 import yaml
-from datetime import timedelta
 from collections import defaultdict
 from math import sqrt
 from statistics import mean, stdev
@@ -18,7 +17,42 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 
-def seg_align(songs, output_dir, boundary_algorithm='olda', label_algorithm='fmc2d', do_twinnet=True):
+# Test info
+songs = [ { 'song': 'Mine',
+            'artist': 'Bazzi',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Bazzi_Mine.wav',
+            'genre': 'pop' },
+          { 'song': 'Finesse',
+            'artist': 'Bruno Mars',
+            'path': '/Users/Chris/autosynch/resources/align_tests/BrunoMars_Finesse.wav',
+            'genre': 'funk' },
+          { 'song': 'Please Me',
+            'artist': 'Cardi B',
+            'path': '/Users/Chris/autosynch/resources/align_tests/CardiB_PleaseMe.wav',
+            'genre': 'hip hop' },
+          { 'song': 'I Miss You',
+            'artist': 'Clean Bandit',
+            'path': '/Users/Chris/autosynch/resources/align_tests/CleanBandit_IMissYou.wav',
+            'genre': 'electronic' },
+          { 'song': 'Passionfruit',
+            'artist': 'Drake',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Drake_Passionfruit.wav',
+            'genre': 'hip hop' },
+          { 'song': 'All the Stars',
+            'artist': 'Kendrick Lamar',
+            'path': '/Users/Chris/autosynch/resources/align_tests/KendrickLamar_AlltheStars.wav',
+            'genre': 'rap' },
+          { 'song': 'I Like Me Better',
+            'artist': 'Lauv',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Lauv_ILikeMeBetter.wav',
+            'genre': 'pop' },
+          { 'song': 'Call Out My Name',
+            'artist': 'The Weeknd',
+            'path': '/Users/Chris/autosynch/resources/align_tests/TheWeeknd_CallOutMyName.wav',
+            'genre': 'R&B' }
+        ]
+
+def seg_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d', do_twinnet=True):
     """
     Performs segmentation-based alignment for songs listed on Genius.
 
@@ -26,8 +60,8 @@ def seg_align(songs, output_dir, boundary_algorithm='olda', label_algorithm='fmc
                   a dict with keys 'song', 'artist', and 'path', representing \
                   the song name, artist, and audio file path respectively.
     :type songs: list[dict{}] | dict{}
-    :param output_dir: Path to directory to store alignment data.
-    :type output_dir: file-like
+    :param dump_dir: Path to directory to store alignment data.
+    :type dump_dir: file-like
     :param boundary_algorithm: Segmentation algorithm name for MSAF.
     :type boundary_algorithm: str
     :param label_algorithm: Labelling algorithm name for MSAF.
@@ -35,6 +69,8 @@ def seg_align(songs, output_dir, boundary_algorithm='olda', label_algorithm='fmc
     :param do_twinnet: Flag whether or not to perform vocal isolation.
     :type do_twinnet: bool
     """
+
+    logging.info('Beginning segmentation alignment...')
 
     if isinstance(songs, dict):
         songs = [songs]
@@ -47,8 +83,12 @@ def seg_align(songs, output_dir, boundary_algorithm='olda', label_algorithm='fmc
     if do_twinnet:
         paths = [song['path'] for song in songs]
         twinnet.twinnet_process(paths)
+    else:
+        logging.info('Skipping MaD TwinNet')
 
     for song in songs:
+
+        logging.info('Processing {} by {}'.format(song['song'], song['artist']))
 
         start_time = time.time()
 
@@ -134,6 +174,9 @@ def seg_align(songs, output_dir, boundary_algorithm='olda', label_algorithm='fmc
         del temp
 
         relabels = [label for label in relabels if label]
+        if not relabels:
+            logging.error('Whole song tagged as instrumental! Skipping...')
+            continue
 
         # Calculate accumulated error matrix
         dp = [[-1 for j in range(len(relabels))] for i in range(len(sc_syllables))]
@@ -188,28 +231,123 @@ def seg_align(songs, output_dir, boundary_algorithm='olda', label_algorithm='fmc
 
         end_time = time.time()
 
+        print(labels)
+        print(alignment)
+
         align_data = {'song': song['song'],
                       'artist': song['artist'],
                       'genre': song['genre'],
                       'process time': end_time - start_time,
-                      'align': [] }
+                      'duration': round((sections[-1] - sections[0]).item(), 2),
+                      'align': []}
 
+        cur_lyric_section = -1
         for i, section in enumerate(alignment):
-            if section[0] == 'instrumental':
-                continue
             for n, lyric_section in enumerate(section):
-                duration = (sections[i+1]-sections[i])/len(section)
-                start = sections[i] + n * duration
-                end = start + duration
-                section_data = {'label': sc_syllables[lyric_section][0],
-                                'syllables': sc_syllables[lyric_section][1],
-                                'start': str(timedelta(seconds=start)),
-                                'end': str(timedelta(seconds=end)),
-                                'duration': str(timedelta(seconds=duration))}
-                align_data['align'].append(section_data)
+                if lyric_section != cur_lyric_section:
+                    breakpoint = round((sections[i] + n * (sections[i+1]-sections[i])/len(section)).item(), 2)
+                    if cur_lyric_section != 'instrumental' and align_data['align']:
+                        align_data['align'][-1]['end'] = breakpoint
+                    if lyric_section != 'instrumental':
+                        align_data['align'].append({'label': sc_syllables[lyric_section][0],
+                                                    'syllables': sc_syllables[lyric_section][1],
+                                                    'start': breakpoint})
+                    cur_lyric_section = lyric_section
+
+        if 'end' not in align_data['align'][-1]:
+            align_data['align'][-1]['end'] = breakpoint
 
         file_name = '{}_{}.yml'.format(song['artist'], song['song']).replace(' ', '')
-        file_path = os.path.join(output_dir, file_name)
+        file_path = os.path.join(dump_dir, file_name)
 
         with open(file_path, 'w') as f:
             yaml.dump(align_data, f, default_flow_style=False)
+
+def seg_align_eval(dump_dir, tagged_dir, verbose=False):
+    """ Must have tagged yamls in tagged_dir and previously run seg_align().
+    """
+    
+    total_err_start = []
+    total_err_end = []
+    total_err_pcdur = []
+    misc_err = []
+
+    for dump in os.listdir(dump_dir):
+        dump_path = os.path.join(dump_dir, dump)
+        tagged_path = os.path.join(tagged_dir, os.path.splitext(dump)[0] + '_tagged.yml')
+
+        with open(dump_path, 'r') as d, open(tagged_path, 'r') as t:
+            dump_data = yaml.safe_load(d)
+            tagged_data = yaml.safe_load(t)
+
+        song_err_start = []
+        song_err_end = []
+        song_err_pcdur = [0, 0]
+
+        for i in range(len(tagged_data['align'])):
+            dump_seg = dump_data['align'][i]
+            tagged_seg = tagged_data['align'][i]
+
+            if dump_seg['label'] != tagged_seg['label']:
+                misc_err.append('{} - {}: Segmentation mismatch'.format(dump_data['artist'], dump_data['song']))
+                continue
+
+            song_err_start.append(dump_seg['start'] - tagged_seg['start'])
+            song_err_end.append(dump_seg['end'] - tagged_seg['end'])
+
+            song_err_pcdur[0] += max(0, min(dump_seg['end'], tagged_seg['end']) - max(dump_seg['start'], tagged_seg['start']))
+            song_err_pcdur[1] += (tagged_seg['end'] - tagged_seg['start'])
+
+        song_err_pcdur = song_err_pcdur[0]/song_err_pcdur[1]
+
+        total_err_start.extend(song_err_start)
+        total_err_end.extend(song_err_end)
+        total_err_pcdur.append(song_err_pcdur)
+
+        if verbose:
+            print('{} - {}'.format(dump_data['artist'], dump_data['song']))
+            print('Avg start error:       {}'.format(mean(song_err_start)))
+            print('Avg start error (abs): {}'.format(mean(map(abs, song_err_start))))
+            print('Avg end error:         {}'.format(mean(song_err_end)))
+            print('Avg end error (abs):   {}'.format(mean(map(abs, song_err_end))))
+
+            song_err_start.extend(song_err_end)
+            print('Avg total error:       {}'.format(mean(song_err_start)))
+            print('Std total error:       {}'.format(stdev(song_err_start)))
+
+            song_err_start = list(map(abs, song_err_start))
+            print('Avg total error (abs): {}'.format(mean(song_err_start)))
+            print('Std total error (abs): {}'.format(stdev(song_err_start)))
+
+            print('Percent coverage:      {}'.format(song_err_pcdur))
+            print()
+
+    print()
+    print('Aggregate evaluation results')
+    print('------------------------------------')
+    print('Avg start error:       {}'.format(mean(total_err_start)))
+    print('Avg start error (abs): {}'.format(mean(map(abs, total_err_start))))
+    print('Avg end error:         {}'.format(mean(total_err_end)))
+    print('Avg end error (abs):   {}'.format(mean(map(abs, total_err_end))))
+
+    total_err_start.extend(total_err_end)
+    print('Avg total error:       {}'.format(mean(total_err_start)))
+    print('Std total error:       {}'.format(stdev(total_err_start)))
+
+    total_err_start = list(map(abs, total_err_start))
+    print('Avg total error (abs): {}'.format(mean(total_err_start)))
+    print('Std total error (abs): {}'.format(stdev(total_err_start)))
+
+    print('Avg percent coverage:  {}'.format(mean(total_err_pcdur)))
+    print('Std percent coverage:  {}'.format(stdev(total_err_pcdur)))
+    print()
+
+    print('Miscellaneous errors ({})'.format(len(misc_err)))
+    print('------------------------------------')
+    for error in misc_err:
+        print(error)
+
+    print()
+
+if __name__ == '__main__':
+    seg_align(songs, '/Users/Chris/autosynch/resources/outputs', do_twinnet=False)
