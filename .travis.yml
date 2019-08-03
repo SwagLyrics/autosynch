@@ -22,10 +22,11 @@ script:
   - curl 'https://zenodo.org/record/3351632/files/mad.pt?download=1' > autosynch/mad_twinnet/outputs/states/mad.pt
   - pytest --cov-config=.coveragerc --cov=autosynch tests/
 
-# only test phase2
+# only test relevant branches
 branches:
   only:
-    - phase2
+    - master
+    - phase3
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
