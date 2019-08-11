@@ -17,6 +17,41 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 
+# Test info
+songs = [ { 'song': 'Mine',
+            'artist': 'Bazzi',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Bazzi_Mine.wav',
+            'genre': 'pop' },
+          { 'song': 'Finesse',
+            'artist': 'Bruno Mars',
+            'path': '/Users/Chris/autosynch/resources/align_tests/BrunoMars_Finesse.wav',
+            'genre': 'funk' },
+          { 'song': 'Please Me',
+            'artist': 'Cardi B',
+            'path': '/Users/Chris/autosynch/resources/align_tests/CardiB_PleaseMe.wav',
+            'genre': 'hip hop' },
+          { 'song': 'I Miss You',
+            'artist': 'Clean Bandit',
+            'path': '/Users/Chris/autosynch/resources/align_tests/CleanBandit_IMissYou.wav',
+            'genre': 'electronic' },
+          { 'song': 'Passionfruit',
+            'artist': 'Drake',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Drake_Passionfruit.wav',
+            'genre': 'hip hop' },
+          { 'song': 'All the Stars',
+            'artist': 'Kendrick Lamar',
+            'path': '/Users/Chris/autosynch/resources/align_tests/KendrickLamar_AlltheStars.wav',
+            'genre': 'rap' },
+          { 'song': 'I Like Me Better',
+            'artist': 'Lauv',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Lauv_ILikeMeBetter.wav',
+            'genre': 'pop' },
+          { 'song': 'Call Out My Name',
+            'artist': 'The Weeknd',
+            'path': '/Users/Chris/autosynch/resources/align_tests/TheWeeknd_CallOutMyName.wav',
+            'genre': 'R&B' }
+        ]
+
 def seg_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d', do_twinnet=True):
     """
     Performs segmentation-based alignment for songs listed on Genius.
@@ -89,13 +124,19 @@ def seg_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d
             max_count = max(max_count, count)
 
             density = count/(section[2]-section[1])
-            if density <= 0.7:
-                instrumentals.append(i)
-            else:
-                if section[0] not in labels_density:
-                    labels_density[section[0]] = [[], []]
-                labels_density[section[0]][0].append(count)
-                labels_density[section[0]][1].append(density)
+
+            # TODO: fix instrumentalization
+            # if density <= 0.7:
+            #     instrumentals.append(i)
+            # else:
+            #     if section[0] not in labels_density:
+            #         labels_density[section[0]] = [[], []]
+            #     labels_density[section[0]][0].append(count)
+            #     labels_density[section[0]][1].append(density)
+            if section[0] not in labels_density:
+                labels_density[section[0]] = [[], []]
+            labels_density[section[0]][0].append(count)
+            labels_density[section[0]][1].append(density)
 
         # Normalize SND syllable counts
         for label in labels_density:
@@ -112,9 +153,10 @@ def seg_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d
             if len(labels_density[label][0]) < 2:
                 continue
 
+            # TODO: Fix distance scales
             mean_syl = mean(labels_density[label][0])
             std_den  = stdev(labels_density[label][1])
-            distance = sqrt((mean_syl - gt_chorus_syl)**2 + std_den**2)
+            distance = sqrt(((mean_syl - gt_chorus_syl)/gt_chorus_syl)**2 + std_den**2)
 
             if distance < min_distance:
                 min_distance = distance
@@ -196,9 +238,6 @@ def seg_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d
 
         end_time = time.time()
 
-        print(labels)
-        print(alignment)
-
         align_data = {'song': song['song'],
                       'artist': song['artist'],
                       'genre': song['genre'],
@@ -210,17 +249,17 @@ def seg_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d
         for i, section in enumerate(alignment):
             for n, lyric_section in enumerate(section):
                 if lyric_section != cur_lyric_section:
-                    breakpoint = round((sections[i] + n * (sections[i+1]-sections[i])/len(section)).item(), 2)
+                    break_point = round((sections[i] + n * (sections[i+1]-sections[i])/len(section)).item(), 2)
                     if cur_lyric_section != 'instrumental' and align_data['align']:
-                        align_data['align'][-1]['end'] = breakpoint
+                        align_data['align'][-1]['end'] = break_point
                     if lyric_section != 'instrumental':
                         align_data['align'].append({'label': sc_syllables[lyric_section][0],
                                                     'syllables': sc_syllables[lyric_section][1],
-                                                    'start': breakpoint})
+                                                    'start': break_point})
                     cur_lyric_section = lyric_section
 
         if 'end' not in align_data['align'][-1]:
-            align_data['align'][-1]['end'] = breakpoint
+            align_data['align'][-1]['end'] = break_point
 
         file_name = '{}_{}.yml'.format(song['artist'], song['song']).replace(' ', '')
         file_path = os.path.join(dump_dir, file_name)
@@ -228,7 +267,7 @@ def seg_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d
         with open(file_path, 'w') as f:
             yaml.dump(align_data, f, default_flow_style=False)
 
-def seg_align_eval(dump_dir, tagged_dir, verbose=False):
+def seg_align_eval(dump_dir, tagged_dir, out_file, verbose=False):
     """ Must have tagged yamls in tagged_dir and previously run seg_align().
     """
 
@@ -270,49 +309,67 @@ def seg_align_eval(dump_dir, tagged_dir, verbose=False):
         total_err_pcdur.append(song_err_pcdur)
 
         if verbose:
-            print('{} - {}'.format(dump_data['artist'], dump_data['song']))
-            print('Avg start error:       {}'.format(mean(song_err_start)))
-            print('Avg start error (abs): {}'.format(mean(map(abs, song_err_start))))
-            print('Avg end error:         {}'.format(mean(song_err_end)))
-            print('Avg end error (abs):   {}'.format(mean(map(abs, song_err_end))))
+            with open(out_file, 'a') as f:
+                f.write('{} - {}\n'.format(dump_data['artist'], dump_data['song']))
+                f.write('Avg start error:       {}\n'.format(mean(song_err_start)))
+                f.write('Avg start error (abs): {}\n'.format(mean(map(abs, song_err_start))))
+                f.write('Avg end error:         {}\n'.format(mean(song_err_end)))
+                f.write('Avg end error (abs):   {}\n'.format(mean(map(abs, song_err_end))))
 
-            song_err_start.extend(song_err_end)
-            print('Avg total error:       {}'.format(mean(song_err_start)))
-            print('Std total error:       {}'.format(stdev(song_err_start)))
+                song_err_start.extend(song_err_end)
+                f.write('Avg total error:       {}\n'.format(mean(song_err_start)))
+                f.write('Std total error:       {}\n'.format(stdev(song_err_start)))
 
-            song_err_start = list(map(abs, song_err_start))
-            print('Avg total error (abs): {}'.format(mean(song_err_start)))
-            print('Std total error (abs): {}'.format(stdev(song_err_start)))
+                song_err_start = list(map(abs, song_err_start))
+                f.write('Avg total error (abs): {}\n'.format(mean(song_err_start)))
+                f.write('Std total error (abs): {}\n'.format(stdev(song_err_start)))
 
-            print('Percent coverage:      {}'.format(song_err_pcdur))
-            print()
+                f.write('Percent coverage:      {}\n'.format(song_err_pcdur))
+                f.write('\n')
 
-    print()
-    print('Aggregate evaluation results')
-    print('------------------------------------')
-    print('Avg start error:       {}'.format(mean(total_err_start)))
-    print('Avg start error (abs): {}'.format(mean(map(abs, total_err_start))))
-    print('Avg end error:         {}'.format(mean(total_err_end)))
-    print('Avg end error (abs):   {}'.format(mean(map(abs, total_err_end))))
+    with open(out_file, 'a') as f:
+        f.write('\n')
+        f.write('Aggregate evaluation results\n')
+        f.write('------------------------------------\n')
+        f.write('Avg start error:       {}\n'.format(mean(total_err_start)))
+        f.write('Avg start error (abs): {}\n'.format(mean(map(abs, total_err_start))))
+        f.write('Avg end error:         {}\n'.format(mean(total_err_end)))
+        f.write('Avg end error (abs):   {}\n'.format(mean(map(abs, total_err_end))))
 
-    total_err_start.extend(total_err_end)
-    print('Avg total error:       {}'.format(mean(total_err_start)))
-    print('Std total error:       {}'.format(stdev(total_err_start)))
+        total_err_start.extend(total_err_end)
+        f.write('Avg total error:       {}\n'.format(mean(total_err_start)))
+        f.write('Std total error:       {}\n'.format(stdev(total_err_start)))
 
-    total_err_start = list(map(abs, total_err_start))
-    print('Avg total error (abs): {}'.format(mean(total_err_start)))
-    print('Std total error (abs): {}'.format(stdev(total_err_start)))
+        total_err_start = list(map(abs, total_err_start))
+        f.write('Avg total error (abs): {}\n'.format(mean(total_err_start)))
+        f.write('Std total error (abs): {}\n'.format(stdev(total_err_start)))
 
-    print('Avg percent coverage:  {}'.format(mean(total_err_pcdur)))
-    print('Std percent coverage:  {}'.format(stdev(total_err_pcdur)))
-    print()
+        f.write('Avg percent coverage:  {}\n'.format(mean(total_err_pcdur)))
+        f.write('Std percent coverage:  {}\n'.format(stdev(total_err_pcdur)))
+        f.write('\n')
 
-    print('Miscellaneous errors ({})'.format(len(misc_err)))
-    print('------------------------------------')
-    for error in misc_err:
-        print(error)
+        f.write('Miscellaneous errors ({})\n'.format(len(misc_err)))
+        f.write('------------------------------------\n')
+        for error in misc_err:
+            f.write(error + '\n')
 
-    print()
+        f.write('\n')
+
+def iter_boundary_label_algorithms(songs, dump_dir, tagged_dir, evals_dir, do_twinnet=False, verbose=True):
+    for b_alg in msaf.get_all_boundary_algorithms():
+        if b_alg == 'example':
+            continue
+
+        for l_alg in msaf.get_all_label_algorithms():
+            out_base = '{}_{}.txt'.format(b_alg, l_alg)
+            out_file = os.path.join(evals_dir, out_base)
+
+            seg_align(songs, dump_dir, b_alg, l_alg, do_twinnet)
+            seg_align_eval(dump_dir, tagged_dir, out_file, verbose)
 
 if __name__ == '__main__':
-    seg_align(songs, '/Users/Chris/autosynch/resources/outputs', do_twinnet=False)
+    dump_dir = '/Users/Chris/autosynch/resources/outputs_2'
+    tagged_dir = '/Users/Chris/autosynch/resources/tagged'
+    evals_dir = '/Users/Chris/autosynch/optimization_evals/6_error_matrix_2'
+
+    iter_boundary_label_algorithms(songs, dump_dir, tagged_dir, evals_dir)
