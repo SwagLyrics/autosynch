@@ -267,7 +267,7 @@ class SyllableCounter(object):
 
         return n_syllables
 
-    def _build_lyrics(self, lyrics):
+    def build_lyrics(self, lyrics):
         """
         Constructs segmented lyrics structure by song section, line, and word.
 
@@ -356,22 +356,20 @@ class SyllableCounter(object):
 
         return n_syllables
 
-    def get_syllable_count_lyrics(self, lyrics):
+    def get_syllable_count_lyrics(self, formatted_lyrics):
         """
         Formats and retrieves syllable counts for each word in lyrics.
 
         Returns of list of tuples representing sections, each of which contains
         a list of lists representing lines of lyrics, each of which is a list of
-        syllable counts of words in that line. See _build_lyrics() for more
+        syllable counts of words in that line. See build_lyrics() for more
         information.
 
-        :param lyrics: Lyrics in format of Genius.com.
-        :type lyrics: str
+        :param formatted_lyrics: Lyrics output from build_lyrics().
+        :type formatted_lyrics: list[tuple(str, list[list[str]])]
         :return syl_lyrics: Syllable counts for words in segmented format.
         :rtype: list[tuple(str, list[list[int]])]
         """
-
-        formatted_lyrics = self._build_lyrics(lyrics)
 
         syl_lyrics = []
         syl_section = []
@@ -383,18 +381,17 @@ class SyllableCounter(object):
 
         return syl_lyrics
 
-    def get_syllable_count_per_section(self, lyrics):
+    def get_syllable_count_per_section(self, syl_lyrics):
         """
         Formats and retrieves syllable counts per section in lyrics.
 
         Sums syllable counts from each section in return value of
         get_syllable_count_lyrics().
 
-        :param lyrics: Lyrics in format of Genius.com.
-        :type lyrics: str
+        :param syl_lyrics: Lyrics output from get_syllable_count_lyrics().
+        :type lyrics: list[tuple(str, list[list[int]])]
         :return: Syllable counts for each section in segmented format.
         :rtype: list[tuple(str, int)]
         """
 
-        syl_lyrics = self.get_syllable_count_lyrics(lyrics)
         return [(section[0], sum(sum(line) for line in section[1])) for section in syl_lyrics]
