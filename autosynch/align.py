@@ -570,7 +570,6 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
         with open(file_path, 'w') as f:
             yaml.dump(align_data, f, default_flow_style=False)
 
-
 def iter_boundary_label_algorithms(songs, dump_dir, tagged_dir, evals_dir, do_twinnet=False, verbose=True):
     for b_alg in msaf.get_all_boundary_algorithms():
         if b_alg == 'example':

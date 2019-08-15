@@ -1,61 +1,55 @@
-import pyaudio
-import wave
 import sys
+import wave
+import pyaudio
 import yaml
 
-CHUNK = 1024
+def playback(audio_file, align_file, chunk_size=1024):
+    wf = wave.open(audio_file, 'rb')
+    p = pyaudio.PyAudio()
+    sr = wf.getframerate()
 
-if len(sys.argv) < 2:
-    print("Plays a wave file.\n\nUsage: %s filename.wav" % sys.argv[0])
-    sys.exit(-1)
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=sr,
+                    output=True)
 
-wf = wave.open(sys.argv[1], 'rb')
+    with open(align_file, 'r') as f:
+        align = yaml.safe_load(f)['align']
 
-p = pyaudio.PyAudio()
+    data = wf.readframes(chunk_size)
 
-fr = wf.getframerate()
+    n_frames = 0
 
-stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                channels=wf.getnchannels(),
-                rate=fr,
-                output=True)
+    i_align = 0
+    i_line = 0
 
-file = '/Users/Chris/autosynch/resources/align_tests/BrunoMars_Finesse.wav'
-b_alg = 'olda'
-l_alg = 'cnmf'
-song = 'Finesse'
-artist = 'Bruno Mars'
+    while data != '':
+        n_frames += chunk_size
+        sec = n_frames / sr
+        if i_align >= len(align):
+            print('\n')
+        else:
+            if sec > align[i_align]['end']:
+                i_align += 1
+                i_line = 0
+            elif sec > align[i_align]['lines'][i_line]['end']:
+                i_line += 1
+            print('# {}: {}\033[K'.format(align[i_align]['label'], align[i_align]['lines'][i_line]['text']), end='\r')
 
-with open('/Users/Chris/autosynch/resources/outputs_2/BrunoMars_Finesse.yml', 'r') as f:
-    align = yaml.safe_load(f)['align']
-with open('/Users/Chris/autosynch/resources/tagged/BrunoMars_Finesse_tagged.yml', 'r') as f:
-    tagged = yaml.safe_load(f)['align']
+        stream.write(data)
+        data = wf.readframes(chunk_size)
 
-data = wf.readframes(CHUNK)
+    stream.stop_stream()
+    stream.close()
 
-n_frames = 0
+    p.terminate()
 
-i_align = 0
-j_align = 0
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print('Usage: python3 {} audio_file.wav align_file.yml'.format(sys.argv[0]))
+        sys.exit(1)
 
-while data != '':
-    n_frames += CHUNK
-    sec = n_frames/fr
-    if i_align >= len(align) or sec > align[i_align]['end']:
-        i_align += 1
-        print(end='\t\t')
-    else:
-        print(align[i_align]['label'], end='\t\t')
-    if j_align >= len(tagged) or sec > tagged[j_align]['end']:
-        j_align += 1
-        print()
-    else:
-        print(align[j_align]['label'])
+    audio_file = sys.argv[1]
+    align_file = sys.argv[2]
 
-    stream.write(data)
-    data = wf.readframes(CHUNK)
-
-stream.stop_stream()
-stream.close()
-
-p.terminate()
+    playback(audio_file, align_file)
