@@ -23,7 +23,7 @@ def playback(audio_file, align_file, chunk_size=1024):
     i_align = 0
     i_line = 0
 
-    while data != '':
+    while data != b'':
         n_frames += chunk_size
         sec = n_frames / sr
         if i_align >= len(align):
@@ -34,7 +34,10 @@ def playback(audio_file, align_file, chunk_size=1024):
                 i_line = 0
             elif sec > align[i_align]['lines'][i_line]['end']:
                 i_line += 1
-            print('# {}: {}\033[K'.format(align[i_align]['label'], align[i_align]['lines'][i_line]['text']), end='\r')
+            if i_align >= len(align):
+                print('# outro', end='r')
+            else:
+                print('# {}: {}\033[K'.format(align[i_align]['label'], align[i_align]['lines'][i_line]['text']), end='\r')
 
         stream.write(data)
         data = wf.readframes(chunk_size)
