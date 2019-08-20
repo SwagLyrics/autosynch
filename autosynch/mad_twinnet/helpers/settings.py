@@ -26,7 +26,7 @@ __all__ = [
 
 
 debug = False
-_debug_suffix = '_debug' if debug else ''
+_version_suffix = ''
 
 # Paths
 _root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -44,33 +44,28 @@ dataset_paths = {
 output_audio_paths = {
     'voice_true': os.path.join(
         _audio_files_path,
-        'test_example_{placeholder}_voice_true{d}.wav'.format(
-            placeholder='{p:02d}', d=_debug_suffix)),
+        'test_example_{}_voice_true.wav'.format('{p:02d}')),
     'voice_predicted': os.path.join(
         _audio_files_path,
-        'test_example_{placeholder}_voice_predicted{d}.wav'.format(
-            placeholder='{p:02d}', d=_debug_suffix)),
+        'test_example_{}_voice_predicted.wav'.format('{p:02d}')),
     'bg_true': os.path.join(
         _audio_files_path,
-        'test_example_{placeholder}_bg_true{d}.wav'.format(
-            placeholder='{p:02d}', d=_debug_suffix)),
+        'test_example_{}_bg_true.wav'.format('{p:02d}')),
     'bg_predicted': os.path.join(
         _audio_files_path,
-        'test_example_{placeholder}_bg_predicted{d}.wav'.format(
-            placeholder='{p:02d}', d=_debug_suffix)),
+        'test_example_{}_bg_predicted.wav'.format('{p:02d}')),
     'mix': os.path.join(
         _audio_files_path,
-        'test_example_{placeholder}_mix_true{d}.wav'.format(
-            placeholder='{p:02d}', d=_debug_suffix))
+        'test_example_{}_mix_true.wav'.format('{p:02d}'))
 }
 
 metrics_paths = {
-    'sdr': os.path.join(_metrics_path, 'sdr{}_p2.pckl'.format(_debug_suffix)),
-    'sir': os.path.join(_metrics_path, 'sir{}_p2.pckl'.format(_debug_suffix))
+    'sdr': os.path.join(_metrics_path, 'sdr_p2.pckl'),
+    'sir': os.path.join(_metrics_path, 'sir_p2.pckl')
 }
 
 output_states_path = {
-    'mad': os.path.join(_states_path, 'mad{}.pt'.format(_debug_suffix))
+    'mad': os.path.join(_states_path, 'mad{}.pt'.format(_version_suffix))
 }
 
 # Strings
