@@ -17,21 +17,59 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 
+# Test info
+songs = [ { 'song': 'Mine',
+            'artist': 'Bazzi',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Bazzi_Mine.wav',
+            'genre': 'pop' },
+          { 'song': 'Finesse',
+            'artist': 'Bruno Mars',
+            'path': '/Users/Chris/autosynch/resources/align_tests/BrunoMars_Finesse.wav',
+            'genre': 'funk' },
+          { 'song': 'Please Me',
+            'artist': 'Cardi B',
+            'path': '/Users/Chris/autosynch/resources/align_tests/CardiB_PleaseMe.wav',
+            'genre': 'hip hop' },
+          { 'song': 'I Miss You',
+            'artist': 'Clean Bandit',
+            'path': '/Users/Chris/autosynch/resources/align_tests/CleanBandit_IMissYou.wav',
+            'genre': 'electronic' },
+          { 'song': 'Passionfruit',
+            'artist': 'Drake',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Drake_Passionfruit.wav',
+            'genre': 'hip hop' },
+          { 'song': 'All the Stars',
+            'artist': 'Kendrick Lamar',
+            'path': '/Users/Chris/autosynch/resources/align_tests/KendrickLamar_AlltheStars.wav',
+            'genre': 'rap' },
+          { 'song': 'I Like Me Better',
+            'artist': 'Lauv',
+            'path': '/Users/Chris/autosynch/resources/align_tests/Lauv_ILikeMeBetter.wav',
+            'genre': 'pop' },
+          { 'song': 'Call Out My Name',
+            'artist': 'The Weeknd',
+            'path': '/Users/Chris/autosynch/resources/align_tests/TheWeeknd_CallOutMyName.wav',
+            'genre': 'R&B' }
+        ]
+
 def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d', do_twinnet=True):
     """
-    Aligns given audio with lyrics by line.
+    Aligns given audio with lyrics by line. If dump_dir is None, no timestamp
+    yml is created.
 
     :param songs: Song metadata in dict with keys 'song', 'artist', 'path' and \
-                  'genre'. Key 'path' is file path to audio.
+                  'genre'. Key 'path' is audio file path. Key 'genre' optional.
     :type songs: list[dict{}] | dict{}
     :param dump_dir: Directory to store timestamp ymls.
-    :type dump_dir: file-like
+    :type dump_dir: file-like | None
     :param boundary_algorithm: Segmentation algorithm for MSAF.
     :type boundary_algorithm: str
     :param label_algorithm: Labelling algorithm for MSAF.
     :type label_algorithm: str
     :param do_twinnet: Flag for performing vocal isolation.
     :type do_twinnet: bool
+    :return align_data: Alignment data. See below for formatting.
+    :rtype: dict{}
     """
 
     logging.info('Beginning alignment...')
@@ -207,10 +245,12 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
 
         align_data = {'song': song['song'],
                       'artist': song['artist'],
-                      'genre': song['genre'],
                       'process time': end_time - start_time,
                       'duration': round((sections[-1] - sections[0]).item(), 2),
                       'align': []}
+
+        if 'genre' in song:
+            align_data['genre'] = song['genre']
 
         cur_lyric_section = -1
         for i, section in enumerate(alignment):
@@ -242,16 +282,19 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
 
                 line_start += line_duration
 
-        file_name = '{}_{}.yml'.format(song['artist'], song['song']).replace(' ', '')
-        file_path = os.path.join(dump_dir, file_name)
+        if dump_dir is not None:
+            file_name = '{}_{}.yml'.format(song['artist'], song['song']).replace(' ', '')
+            file_path = os.path.join(dump_dir, file_name)
 
-        with open(file_path, 'w') as f:
-            yaml.dump(align_data, f, default_flow_style=False)
+            with open(file_path, 'w') as f:
+                yaml.dump(align_data, f, default_flow_style=False)
+
+        return align_data
 
 def eval_align(dump_dir, tagged_dir, out_file, verbose=False):
     """
     Evaluates segmentation based alignment by time error and percent coverage
-    and outputs results to file. Must have tagged yamls in tagged_dir and
+    and outputs results to file. Must have tagged ymls in tagged_dir and have
     previously run line_align().
 
     :param dump_dir: Directory to store timestamp ymls.
