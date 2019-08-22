@@ -13,8 +13,7 @@ git:
 
 # install dependencies
 install:
-  - brew install portaudio
-  - brew link --overwrite portaudio
+  - sudo apt install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg libav-tools
   - pip install -r requirements.txt
   - pip install pytest pytest-cov pytest-timeout mock
 
