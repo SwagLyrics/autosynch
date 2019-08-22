@@ -13,7 +13,8 @@ git:
 
 # install dependencies
 install:
-  - sudo apt install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg libav-tools
+  - sudo apt-get update
+  - sudo apt-get install portaudio19-dev
   - pip install -r requirements.txt
   - pip install pytest pytest-cov pytest-timeout mock
 
