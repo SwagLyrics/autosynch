@@ -13,6 +13,8 @@ git:
 
 # install dependencies
 install:
+  - brew install portaudio
+  - brew link --overwrite portaudio
   - pip install -r requirements.txt
   - pip install pytest pytest-cov pytest-timeout mock
 
@@ -29,4 +31,4 @@ branches:
     - phase3
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - bash < (curl -s https://codecov.io/bash)
