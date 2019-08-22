@@ -17,5 +17,5 @@ def test_handles_bad_files(snd):
     assert snd.run(os.path.realpath(__file__)) is None
 
 def test_run_praat_script(snd):
-    example_audio = os.path.join(tests_dir, 'audio/example_snd.wav')
+    example_audio = os.path.join(tests_dir, 'resources/example_snd.wav')
     assert len(snd.run(example_audio)) == 10

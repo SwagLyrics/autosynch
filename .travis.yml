@@ -14,7 +14,7 @@ git:
 # install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install pytest pytest-cov mock
+  - pip install pytest pytest-cov pytest-timeout mock
 
 # run tests
 script:

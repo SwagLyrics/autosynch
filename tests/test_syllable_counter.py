@@ -7,9 +7,9 @@ def counter():
     return SyllableCounter()
 
 @patch.object(SyllableCounter, '_load_data', return_value=([],{}))
-def test_load_data_on_init(mock):
+def test_load_data_on_init(mock_sc):
     SyllableCounter()
-    assert mock.called
+    assert mock_sc.called
 
 def test_handles_no_lexicon_data():
     sc = SyllableCounter(sba_lexicon_path=None)
@@ -34,11 +34,11 @@ def test_sba(counter):
     assert counter._sba('qulliq') is None
 
 def test_build_lyrics(counter):
-    assert counter._build_lyrics('hello\nen-dash') == [('default', [['hello'], ['en', 'dash']])]
-    assert counter._build_lyrics('[Chorus]\nhello\nhy-phen') == [('chorus', [['hello'], ['hy', 'phen']])]
-    assert counter._build_lyrics('[Produced by X]\n[Chorus]\nhello\nsla/sh') == [('chorus', [['hello'], ['sla', 'sh']])]
-    assert counter._build_lyrics('[Chorus]\nhello\n[Verse]\nits me') == [('chorus', [['hello']]), ('verse', [['its', 'me']])]
-    assert counter._build_lyrics('[Bridge]\nhello\n[Intro]\nits me') == [('bridge', [['hello']]), ('intro', [['its', 'me']])]
+    assert counter.build_lyrics('hello\nen-dash') == [('default', [['hello'], ['en', 'dash']])]
+    assert counter.build_lyrics('[Chorus]\nhello\nhy-phen') == [('chorus', [['hello'], ['hy', 'phen']])]
+    assert counter.build_lyrics('[Produced by X]\n[Chorus]\nhello\nsla/sh') == [('chorus', [['hello'], ['sla', 'sh']])]
+    assert counter.build_lyrics('[Chorus]\nhello\n[Verse]\nits me') == [('chorus', [['hello']]), ('verse', [['its', 'me']])]
+    assert counter.build_lyrics('[Bridge]\nhello\n[Intro]\nits me') == [('bridge', [['hello']]), ('intro', [['its', 'me']])]
 
 def test_get_syllable_count_word(counter):
     assert counter.get_syllable_count_word('42') == 3
@@ -49,7 +49,7 @@ def test_get_syllable_count_word(counter):
     assert counter.get_syllable_count_word('qulliq') == 2
 
 def test_get_syllable_count_lyrics(counter):
-    assert counter.get_syllable_count_lyrics('hElLO\nit\'s M####e') == [('default', [[2], [1, 1]])]
+    assert counter.get_syllable_count_lyrics([('chorus', [['hElLO'], ['it\'s', 'M####e']])]) == [('chorus', [[2], [1, 1]])]
 
 def test_get_syllable_count_per_section(counter):
-    assert counter.get_syllable_count_per_section('[Chorus]\nhello\n[Verse]\nits me') == [('chorus', 2), ('verse', 2)]
+    assert counter.get_syllable_count_per_section([('chorus', [[2], [1, 1]])]) == [('chorus', 4)]

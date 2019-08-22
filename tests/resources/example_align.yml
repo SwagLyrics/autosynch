@@ -1,0 +1,22 @@
+align:
+- end: 14
+  label: intro
+  lines:
+  - end: 14
+    text: intro test
+  start: 0
+- end: 43
+  label: verse
+  lines:
+  - end: 43
+    text: verse test
+  start: 14
+- end: 57
+  label: chorus
+  lines:
+  - end: 58
+    text: chorus test
+  start: 43
+artist: Liz Nelson
+genre: singer-songwriter
+song: Rainfall

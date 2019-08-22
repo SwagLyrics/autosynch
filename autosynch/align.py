@@ -17,41 +17,6 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 
-# Test info
-songs = [ { 'song': 'Mine',
-            'artist': 'Bazzi',
-            'path': '/Users/Chris/autosynch/resources/align_tests/Bazzi_Mine.wav',
-            'genre': 'pop' },
-          { 'song': 'Finesse',
-            'artist': 'Bruno Mars',
-            'path': '/Users/Chris/autosynch/resources/align_tests/BrunoMars_Finesse.wav',
-            'genre': 'funk' },
-          { 'song': 'Please Me',
-            'artist': 'Cardi B',
-            'path': '/Users/Chris/autosynch/resources/align_tests/CardiB_PleaseMe.wav',
-            'genre': 'hip hop' },
-          { 'song': 'I Miss You',
-            'artist': 'Clean Bandit',
-            'path': '/Users/Chris/autosynch/resources/align_tests/CleanBandit_IMissYou.wav',
-            'genre': 'electronic' },
-          { 'song': 'Passionfruit',
-            'artist': 'Drake',
-            'path': '/Users/Chris/autosynch/resources/align_tests/Drake_Passionfruit.wav',
-            'genre': 'hip hop' },
-          { 'song': 'All the Stars',
-            'artist': 'Kendrick Lamar',
-            'path': '/Users/Chris/autosynch/resources/align_tests/KendrickLamar_AlltheStars.wav',
-            'genre': 'rap' },
-          { 'song': 'I Like Me Better',
-            'artist': 'Lauv',
-            'path': '/Users/Chris/autosynch/resources/align_tests/Lauv_ILikeMeBetter.wav',
-            'genre': 'pop' },
-          { 'song': 'Call Out My Name',
-            'artist': 'The Weeknd',
-            'path': '/Users/Chris/autosynch/resources/align_tests/TheWeeknd_CallOutMyName.wav',
-            'genre': 'R&B' }
-        ]
-
 def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d', do_twinnet=True):
     """
     Aligns given audio with lyrics by line. If dump_dir is None, no timestamp
@@ -186,9 +151,11 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
         del temp
 
         relabels = [label for label in relabels if label]
-        if not relabels:
-            logging.error('Whole song tagged as instrumental! Skipping...')
-            continue
+
+        # Instrumental error checking
+        # if not relabels:
+        #     logging.error('Whole song tagged as instrumental! Skipping...')
+        #     continue
 
         # Calculate accumulated error matrix
         dp = [[-1 for j in range(len(relabels))] for i in range(len(sc_syllables))]
