@@ -33,8 +33,8 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
     :type label_algorithm: str
     :param do_twinnet: Flag for performing vocal isolation.
     :type do_twinnet: bool
-    :return align_data: Alignment data. See below for formatting.
-    :rtype: dict{}
+    :return align_data: List of alignment data. See below for formatting.
+    :rtype: list[dict{}]
     """
 
     logging.info('Beginning alignment...')
