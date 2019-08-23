@@ -8,7 +8,6 @@ import os
 from operator import itemgetter
 
 import numpy as np
-from mir_eval import separation as bss_eval
 from numpy.lib import stride_tricks
 from scipy import signal
 
@@ -139,7 +138,7 @@ def data_process_results_testing(index, voice_true, bg_true, voice_predicted,
                                  window_size, mix, mix_magnitude, mix_phase, hop,
                                  context_length, output_file_name=None,
                                  get_background=False):
-    """Calculates SDR and SIR and creates the resulting audio files.
+    """Creates the resulting audio files.
 
     :param index: The index of the current source/track.
     :type index: int
@@ -199,12 +198,6 @@ def data_process_results_testing(index, voice_true, bg_true, voice_predicted,
         wav_write(voice_true, file_name=output_audio_paths['voice_true'].format(p=example_index), **wav_quality)
         wav_write(bg_true, file_name=output_audio_paths['bg_true'].format(p=example_index), **wav_quality)
         wav_write(mix, file_name=output_audio_paths['mix'].format(p=example_index), **wav_quality)
-
-        # Metrics calculation
-        sdr, sir = _get_me_the_metrics(bss_eval.bss_eval_images_framewise(
-            [voice_true[:min_len], bg_true[:min_len]],
-            [voice_hat[:min_len], bg_hat[:min_len]]
-        ))
 
     else:
         voice_hat_path = output_file_name[0]

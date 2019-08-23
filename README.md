@@ -15,7 +15,8 @@ To install, do the following:
 
 ## dependencies
 Using autosynch requires a trained model for vocal isolation as well as
-PortAudio. To get both, simply execute:
+PortAudio. For mp3 support, SoX is required. On MacOS/Linux, get everything by
+executing:
 - `./setup.sh`
 
 If permission is denied, first execute:
@@ -37,8 +38,14 @@ On Linux:
 - `sudo apt-get update`
 - `sudo apt-get install portaudio19-dev`
 
-On Windows:
-- See binaries download and further instructions [here](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html).
+### install sox
+Note: Installing SoX is optional and only required for processing mp3 files.
+
+On Mac:
+- `brew install ffmpeg`
+
+On Linux:
+- `sudo apt install ffmpeg`
 
 ## usage
 To play a song with its lyrics displayed at its calculated position:
@@ -48,6 +55,8 @@ It will take a few minutes to perform the alignment process.
 Alternatively, if you have already generated an alignment file using
 `autosynch.align.line_align`, you may also execute:
 - `python3 autosynch/playback.py <audio_file.wav> <align_file.yml>`
+
+If you would like to process an mp3 file instead, see [this section](#install-sox).
 
 Note: If you did not use `setup.sh`, first make sure you set your Python
 environment correctly with `export PYTHONPATH=$PYTHONPATH:./` from the outer

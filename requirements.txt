@@ -1,4 +1,3 @@
-mir-eval==0.5
 msaf==0.1.70
 num2words==0.5.10
 numpy==1.16.4

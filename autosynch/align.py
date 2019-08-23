@@ -17,7 +17,8 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 
-def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2d', do_twinnet=True):
+def line_align(songs, dump_dir, boundary_algorithm='olda',
+               label_algorithm='fmc2d', do_twinnet=True):
     """
     Aligns given audio with lyrics by line. If dump_dir is None, no timestamp
     yml is created.
@@ -77,7 +78,9 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
         snd_syllables = snd.run(voice_path)
 
         # Structural segmentation analysis on original audio
-        sections, labels = msaf.process(mixed_path, boundaries_id=boundary_algorithm, labels_id=label_algorithm)
+        sections, labels = msaf.process(mixed_path,
+                                        boundaries_id=boundary_algorithm,
+                                        labels_id=label_algorithm)
 
         # Save instrumental section indices
         instrumentals = []
@@ -98,7 +101,6 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
             density = count / duration
 
             # TODO: Improve instrumental categorization
-            print(density)
             if density < 0.4:
                 instrumentals.append(i)
             else:
@@ -362,7 +364,8 @@ def eval_align(dump_dir, tagged_dir, out_file, verbose=False):
 
         f.write('\n')
 
-def iter_boundary_label_algorithms(songs, dump_dir, tagged_dir, evals_dir, do_twinnet=False, verbose=True):
+def iter_boundary_label_algorithms(songs, dump_dir, tagged_dir, evals_dir,
+                                   do_twinnet=False, verbose=True):
     """
     Runs line_align() and eval_align() using each available segmentation and
     labelling algorithm in MSAF. See respective methods for parameter details.
