@@ -11,6 +11,6 @@ cmudict_path = os.path.join(resources_dir, 'cmudict.0.7a.txt')
 nettalk_path = os.path.join(resources_dir, 'nettalk.data')
 
 dp_err_matrix = {'chorus': {'chorus': 2, 'verse': 4, 'other': 9},
-                 'verse':  {'chorus': 4, 'verse': 3, 'other': 6},
-                 'intro':  {'chorus': 3, 'verse': 4, 'other': 4},
-                 'bridge': {'chorus': 8, 'verse': 8, 'other': 3}}
+                 'verse':  {'chorus': 4, 'verse': 3, 'other': 8},
+                 'intro':  {'chorus': 6, 'verse': 6, 'other': 5},
+                 'bridge': {'chorus': 8, 'verse': 8, 'other': 6}}

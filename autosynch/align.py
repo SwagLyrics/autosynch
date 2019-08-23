@@ -53,6 +53,8 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
     else:
         logging.info('Skipping MaD TwinNet')
 
+    total_align_data = []
+
     for song in songs:
 
         logging.info('Processing {} by {}'.format(song['song'], song['artist']))
@@ -96,17 +98,18 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
             density = count / duration
 
             # TODO: Improve instrumental categorization
-            # if duration > 5 and density <= 0.58:
-            #     instrumentals.append(i)
-            # else:
-            #     if section[0] not in labels_density:
-            #         labels_density[section[0]] = [[], []]
-            #     labels_density[section[0]][0].append(count)
-            #     labels_density[section[0]][1].append(density)
-            if section[0] not in labels_density:
-                labels_density[section[0]] = [[], []]
-            labels_density[section[0]][0].append(count)
-            labels_density[section[0]][1].append(density)
+            print(density)
+            if density < 0.4:
+                instrumentals.append(i)
+            else:
+                if section[0] not in labels_density:
+                    labels_density[section[0]] = [[], []]
+                labels_density[section[0]][0].append(count)
+                labels_density[section[0]][1].append(density)
+            # if section[0] not in labels_density:
+            #     labels_density[section[0]] = [[], []]
+            # labels_density[section[0]][0].append(count)
+            # labels_density[section[0]][1].append(density)
 
         # Normalize SND syllable counts
         for label in labels_density:
@@ -152,10 +155,9 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
 
         relabels = [label for label in relabels if label]
 
-        # Instrumental error checking
-        # if not relabels:
-        #     logging.error('Whole song tagged as instrumental! Skipping...')
-        #     continue
+        if not relabels:
+            logging.error('Whole song tagged as instrumental! Skipping...')
+            continue
 
         # Calculate accumulated error matrix
         dp = [[-1 for j in range(len(relabels))] for i in range(len(sc_syllables))]
@@ -256,7 +258,9 @@ def line_align(songs, dump_dir, boundary_algorithm='olda', label_algorithm='fmc2
             with open(file_path, 'w') as f:
                 yaml.dump(align_data, f, default_flow_style=False)
 
-        return align_data
+        total_align_data.append(align_data)
+
+    return total_align_data
 
 def eval_align(dump_dir, tagged_dir, out_file, verbose=False):
     """

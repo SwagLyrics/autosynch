@@ -30,7 +30,7 @@ def playback(audio_file, align_file, artist=None, song=None, chunk_size=1024, ve
             logging.disable(logging.INFO)
 
         print('Processing...\n')
-        align = line_align({'song': song, 'artist': artist, 'path': audio_file}, None)['align']
+        align = line_align({'song': song, 'artist': artist, 'path': audio_file}, None)[0]['align']
         print()
 
     else:
@@ -74,11 +74,13 @@ def playback(audio_file, align_file, artist=None, song=None, chunk_size=1024, ve
 
     p.terminate()
 
+    print()
+
 if __name__ == '__main__':
     if len(sys.argv) == 4:
         playback(sys.argv[1], None, sys.argv[2], sys.argv[3])
     elif len(sys.argv) == 3:
         playback(sys.argv[1], sys.argv[2])
     else:
-        print('Usage: python3 {} audio_file.wav artist_name song_title'.format(sys.argv[0]))
+        print('Usage: python3 {} <audio_file.wav> <artist_name> <song_title>'.format(sys.argv[0]))
         sys.exit(1)
