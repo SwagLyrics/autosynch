@@ -1,5 +1,6 @@
-dist: xenial # for Python versions >= 3.7
 language: python
+dist: xenial # for Python versions >= 3.7
+sudo: required
 
 # Python versions
 python:
@@ -20,6 +21,10 @@ install:
   - sudo apt-get install portaudio19-dev
   - pip install -r requirements.txt
   - pip install pytest pytest-cov pytest-timeout mock
+
+env:
+  global:
+    AUDIODEV=null
 
 # run tests
 script:
