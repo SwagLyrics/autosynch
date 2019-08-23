@@ -14,17 +14,9 @@ git:
 # install dependencies
 install:
   - sudo apt-get update
-  - sudo apt install linux-modules-extra-`uname -r`
-  - sudo usermod -a -G audio travis
-  - sudo bash prep_travis_soundcard.sh
-  - sudo modprobe snd-dummy
   - sudo apt-get install portaudio19-dev
   - pip install -r requirements.txt
   - pip install pytest pytest-cov pytest-timeout mock
-
-env:
-  global:
-    AUDIODEV=null
 
 # run tests
 script:
@@ -35,7 +27,7 @@ script:
 # only test relevant branches
 branches:
   only:
-    - phase3
+    - master
 
 after_success:
   - bash < (curl -s https://codecov.io/bash)

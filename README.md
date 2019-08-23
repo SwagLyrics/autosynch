@@ -1,6 +1,6 @@
 # autosynch
 
-[![Build Status](https://travis-ci.com/SwagLyrics/autosynch.svg?branch=phase3)](https://travis-ci.com/SwagLyrics/autosynch) [![codecov](https://codecov.io/gh/chriswang030/autosynch/branch/phase2/graph/badge.svg)](https://codecov.io/gh/chriswang030/autosynch)
+[![Build Status](https://travis-ci.com/SwagLyrics/autosynch.svg?branch=master)](https://travis-ci.com/SwagLyrics/autosynch) [![codecov](https://codecov.io/gh/chriswang030/autosynch/branch/phase2/graph/badge.svg)](https://codecov.io/gh/chriswang030/autosynch)
 
 ## about
 Given an audio file of some recognizable song, autosynch will try to align its
@@ -9,7 +9,7 @@ on <genius.com>.
 
 ## installation
 To install, do the following:
-- `git clone` this branch (use `-b phase3 --single-branch` to clone just this branch)
+- `git clone`
 - `cd autosynch`
 - `pip install -r requirements.txt`
 
@@ -38,7 +38,7 @@ On Linux:
 - `sudo apt-get install portaudio19-dev`
 
 On Windows:
-- See binaries download and further instructions [here](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html)
+- See binaries download and further instructions [here](http://portaudio.com/docs/v19-doxydocs/tutorial_start.html).
 
 ## usage
 To play a song with its lyrics displayed at its calculated position:
