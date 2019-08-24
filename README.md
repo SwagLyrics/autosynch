@@ -9,9 +9,11 @@ on [Genius](https://genius.com).
 
 ## installation
 To install, do the following:
-- `git clone`
-- `cd autosynch`
-- `pip install -r requirements.txt`
+```
+git clone
+cd autosynch
+pip install -r requirements.txt
+```
 
 *Note: autosynch is supported only on Python 3.6+.*
 
