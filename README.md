@@ -9,6 +9,10 @@ Given an audio file of some recognizable song, autosynch will try to align its
 lyrics to their temporal location in the song. The song lyrics must be available
 on [Genius](https://genius.com).
 
+This project is still in its early stages and is inaccurate in many cases. Optimization is a work in progress, but feel free to try it out, modify it, or contribute!
+
+Developed during Google Summer of Code 2019 with CCExtractor.
+
 ## installation
 To install, do the following:
 ```
