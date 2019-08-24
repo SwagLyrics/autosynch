@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/SwagLyrics/autosynch.svg?branch=master)](https://travis-ci.com/SwagLyrics/autosynch) [![codecov](https://codecov.io/gh/SwagLyrics/autosynch/branch/master/graph/badge.svg)](https://codecov.io/gh/SwagLyrics/autosynch)
 
+**Check out [my blog](https://medium.com/@chriswang030) on my progress and process throughout GSoC 2019!**
+
 ## about
 Given an audio file of some recognizable song, autosynch will try to align its
 lyrics to their temporal location in the song. The song lyrics must be available
@@ -67,7 +69,7 @@ python autosynch/playback.py [audio_file.wav] [artist] [song_title]
 It will take a few minutes to perform the alignment process. To save the
 alignment data to eliminate processing time in future plays of the same audio,
 add the flag `-s SAVE_DIR`, where `SAVE_DIR` is the directory you want to save
-the alignment data
+the alignment data.
 
 If you have already generated and saved an alignment data file:
 ```
