@@ -75,20 +75,26 @@ python autosynch/playback.py [audio_file.wav] -f [align_file.yml]
 If you would like to process an mp3 file, see [this section](#install-sox).
 Running with an mp3 will automatically generate a wav file in the same directory.
 
-*Note: If you did not use `setup.sh`, first make sure you set your Python
-environment correctly with `export PYTHONPATH=$PYTHONPATH:./` from the outer
-`autosynch` directory.*
+*Note: If you did not use* `setup.sh`*, first make sure you set your Python*
+*environment correctly with* `export PYTHONPATH=$PYTHONPATH:./` *from the outer*
+`autosynch` *directory.*
 
 ## demos
 **Bruno Mars - Finesse**
+
 [![Finesse demo](https://img.youtube.com/vi/csBDM14ssts/0.jpg)](https://www.youtube.com/watch?v=csBDM14ssts)
-(https://www.youtube.com/watch?v=csBDM14ssts)
+
+*(https://www.youtube.com/watch?v=csBDM14ssts)*
+
 The last chorus lags behind a bit, but for the most part sections and lines are
 nicely aligned.
 
 **Fun. - We Are Young**
+
 [![We Are Young demo](https://img.youtube.com/vi/Z-yTGKd3ji8/0.jpg)](https://www.youtube.com/watch?v=Z-yTGKd3ji8)
-(https://www.youtube.com/watch?v=Z-yTGKd3ji8)
+
+*(https://www.youtube.com/watch?v=Z-yTGKd3ji8)*
+
 The instrumental at the beginning throws off the first verse, but everything
 catches up in by line 4.
 
