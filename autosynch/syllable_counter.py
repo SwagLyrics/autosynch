@@ -1,15 +1,3 @@
-"""
-References:
-- T. J. Sejnowski and C. R. Rosenberg. "Parallel networks that learn to
-  pronounce English text." Complex Systems 1(1), 1987, pp. 145–168.
-- J. Dedina and H. C. Nusbaum. "PRONOUNCE: a program for pronunciation by
-  analogy." Comput. Speech Lang. 5(1), 1991, pp. 55-64.
-- Y. Marchand and R. I. Damper. "A multistrategy approach to improving
-  pronunciation by analogy." Comput. Linguist. 26(2), 2000, pp. 196-219.
-- Y. Marchand and R. I. Damper. "Can syllabification improve pronunciation by
-  analogy of English?" Nat. Lang. Eng. 13(1) 2006, pp. 1-24.
-"""
-
 import os
 import re
 from num2words import num2words
