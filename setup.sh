@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Set PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:./
