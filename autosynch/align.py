@@ -51,7 +51,7 @@ def line_align(songs, dump_dir=timestamps_dir, boundary_algorithm='olda',
     # Perform MaD TwinNet in one batch
     if do_twinnet:
         paths = [song['path'] for song in songs]
-        test_main(input_files=paths, targets='vocals', outdir=outputs_dir)
+        test_main(input_files=paths, targets=['vocals'], outdir=outputs_dir)
     else:
         logging.info('Skipping isolation')
 

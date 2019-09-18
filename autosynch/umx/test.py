@@ -7,8 +7,7 @@ import json
 from pathlib import Path
 import scipy.signal
 import resampy
-import utils
-import model
+from autosynch.umx import model, utils
 import warnings
 import tqdm
 from contextlib import redirect_stderr
@@ -270,7 +269,7 @@ def test_main(input_files=None, samplerate=44100, niter=1, alpha=1.0, softmask=F
         # write out estimates
         for target, estimate in estimates.items():
             sf.write(
-                outdir / Path(target).with_suffix('.wav'),
+                outdir / Path(Path(input_file).stem+target).with_suffix('.wav'),
                 estimate,
                 samplerate
             )
