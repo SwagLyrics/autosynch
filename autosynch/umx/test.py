@@ -269,7 +269,7 @@ def test_main(input_files=None, samplerate=44100, niter=1, alpha=1.0, softmask=F
         # write out estimates
         for target, estimate in estimates.items():
             sf.write(
-                outdir / Path(Path(input_file).stem+target).with_suffix('.wav'),
+                outdir / Path(Path(input_file).stem+'_'+target).with_suffix('.wav'),
                 estimate,
                 samplerate
             )

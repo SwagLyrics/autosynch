@@ -255,6 +255,8 @@ def line_align(songs, dump_dir=timestamps_dir, boundary_algorithm='olda',
                 line_start += line_duration
 
         if dump_dir is not None:
+            if not os.path.isdir(dump_dir):
+                os.mkdir(dump_dir)
             file_name = '{}_{}.yml'.format(song['artist'], song['song']).replace(' ', '')
             file_path = os.path.join(dump_dir, file_name)
 
