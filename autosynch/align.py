@@ -10,14 +10,15 @@ from swaglyrics.cli import get_lyrics
 
 from autosynch.snd import SND
 from autosynch.syllable_counter import SyllableCounter
-from autosynch.mad_twinnet.scripts import twinnet
-from autosynch.config import resources_dir, dp_err_matrix
+from autosynch.umx.test import test_main
+from autosynch.config import outputs_dir, dp_err_matrix, timestamps_dir
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 
-def line_align(songs, dump_dir, boundary_algorithm='olda',
+
+def line_align(songs, dump_dir=timestamps_dir, boundary_algorithm='olda',
                label_algorithm='fmc2d', do_twinnet=True):
     """
     Aligns given audio with lyrics by line. If dump_dir is None, no timestamp
@@ -50,9 +51,9 @@ def line_align(songs, dump_dir, boundary_algorithm='olda',
     # Perform MaD TwinNet in one batch
     if do_twinnet:
         paths = [song['path'] for song in songs]
-        twinnet.twinnet_process(paths)
+        test_main(input_files=paths, targets='vocals', outdir=outputs_dir)
     else:
-        logging.info('Skipping MaD TwinNet')
+        logging.info('Skipping isolation')
 
     total_align_data = []
 
@@ -64,7 +65,7 @@ def line_align(songs, dump_dir, boundary_algorithm='olda',
 
         # Get file names
         mixed_path = song['path']
-        voice_path = os.path.splitext(song['path'])[0] + '_voice.wav'
+        voice_path = os.path.join(outputs_dir, os.path.splitext(os.path.basename(song['path']))[0] + '_vocals.wav')
 
         # Get lyrics from Genius
         lyrics = get_lyrics(song['song'], song['artist'])
@@ -130,7 +131,7 @@ def line_align(songs, dump_dir, boundary_algorithm='olda',
 
             # TODO: Fix distance scales
             mean_syl = mean(labels_density[label][0])
-            std_den  = stdev(labels_density[label][1])
+            std_den = stdev(labels_density[label][1])
             distance = sqrt(((mean_syl - gt_chorus_syl)/gt_chorus_syl)**2 + std_den**2)
 
             if distance < min_distance:
@@ -264,6 +265,7 @@ def line_align(songs, dump_dir, boundary_algorithm='olda',
 
     return total_align_data
 
+
 def eval_align(dump_dir, tagged_dir, out_file, verbose=False):
     """
     Evaluates segmentation based alignment by time error and percent coverage
@@ -363,6 +365,7 @@ def eval_align(dump_dir, tagged_dir, out_file, verbose=False):
             f.write(error + '\n')
 
         f.write('\n')
+
 
 def iter_boundary_label_algorithms(songs, dump_dir, tagged_dir, evals_dir,
                                    do_twinnet=False, verbose=True):

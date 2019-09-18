@@ -2,6 +2,8 @@ import os
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 resources_dir = os.path.join(parent_dir, 'resources')
+outputs_dir = os.path.join(parent_dir, 'outputs')
+timestamps_dir = os.path.join(parent_dir, 'timestamps')
 tests_dir = os.path.join(parent_dir, 'tests')
 evals_dir = os.path.join(parent_dir, 'optimization_evals')
 align_tests_dir = os.path.join(resources_dir, 'align_tests')

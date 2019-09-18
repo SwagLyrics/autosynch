@@ -10,6 +10,7 @@ import yaml
 
 from autosynch.align import line_align
 
+
 def playback(audio_file, align_file, artist=None, song=None, save=None,
              chunk_size=1024, verbose=False):
     """
@@ -101,6 +102,7 @@ def mp3_to_wav(mp3_file):
 
     return wav_file
 
+
 def main():
     parser = argparse.ArgumentParser(description='Play a song synchronized with its lyrics.')
 
@@ -125,6 +127,7 @@ def main():
         args['audio_file'] = mp3_to_wav(args['audio_file'])
 
     playback(**args)
+
 
 if __name__ == '__main__':
     main()
