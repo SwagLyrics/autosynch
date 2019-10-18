@@ -1,6 +1,6 @@
 msaf==0.1.70
 num2words==0.5.10
-numpy==1.17.2
+numpy==1.17.3
 praat-parselmouth==0.3.3
 PyAudio==0.2.11
 PyYAML==5.1.2
