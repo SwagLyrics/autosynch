@@ -14,4 +14,7 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     sudo apt-get update
     sudo apt-get install portaudio19-dev
     sudo apt-get install sox
+    sudo apt-get install libsox-fmt-mp3
+    git clone https://github.com/Deezer/spleeter
+    conda install -c conda-forge spleeter
 fi
