@@ -5,6 +5,9 @@
 **Check out [my blog](https://medium.com/@chriswang030) on my progress and process throughout GSoC 2019!**
 
 ## about
+**This branch provides [Spleeter](https://github.com/deezer/spleeter) support, to try it out provide --spleeter to the playback.py script**
+*Note: Spleeter is installed with setup.sh (needs conda)*
+
 Given an audio file of some recognizable song, autosynch will try to align its
 lyrics to their temporal location in the song. The song lyrics must be available
 on [Genius](https://genius.com).

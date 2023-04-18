@@ -11,7 +11,7 @@ import yaml
 from autosynch.align import line_align
 
 def playback(audio_file, align_file, artist=None, song=None, save=None,
-             chunk_size=1024, verbose=False):
+             chunk_size=1024, verbose=False, spleeter=False):
     """
     Plays audio with lyrics displayed at designated timestamp. If align_file is
     None, then full alignment process is performed with song and artist data.
@@ -41,7 +41,14 @@ def playback(audio_file, align_file, artist=None, song=None, save=None,
 
         print('Processing...\n')
         print(audio_file)
-        align = line_align({'song': song, 'artist': artist, 'path': audio_file}, save)[0]['align']
+
+        if spleeter:
+            print("Trying Spleeter instead...\n")
+            subprocess.call(["spleeter", "separate", "-i", audio_file, "-p", "spleeter:2stems", "-o", "spleeter_output"])
+            subprocess.call(["mv", "spleeter_output/" + os.path.splitext(os.path.split(audio_file)[1])[0] + "/vocals.wav", os.path.splitext(audio_file)[0] + '_voice.wav'])
+            subprocess.call(["rm", "-rf", "spleeter_output"])
+
+        align = line_align({'song': song, 'artist': artist, 'path': audio_file}, save, do_twinnet=not spleeter)[0]['align']
     else:
         with open(align_file, 'r') as f:
             align = yaml.safe_load(f)['align']
@@ -114,6 +121,8 @@ def main():
                         help='path to previously saved align file')
     parser.add_argument('-s', '--save', nargs='?', const=os.getcwd(),
                         metavar='SAVE_DIR', help='directory for saving align file')
+    parser.add_argument('-spl', '--spleeter',
+                        help='try out spleeter instead of mad twinnet', action='store_true')
 
     args = vars(parser.parse_args())
 
